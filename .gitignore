@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.toc
+paper/*.synctex.gz
+paper/*.fls
+paper/*.fdb_latexmk
+
+# IJCAI style files come from the official author kit and are not redistributed here.
+# Download them from https://www.ijcai.org/authors_kit before compiling the paper.
+paper/ijcai*.sty
+paper/named.bst
+
+# Agent decision traces - my own working record, not a project deliverable.
+agent_logs/
