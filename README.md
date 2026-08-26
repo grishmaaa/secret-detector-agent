@@ -53,10 +53,10 @@ The second half is the part I care about. A rule that wins under every assumptio
 | Assignment deliverable | Status |
 |---|---|
 | §3 problem statement | **Done** — stated above and in `research-file.md` |
-| §4 research file | Not started — only the problem and objective sections are filled |
+| §4 research file | **Mostly done** — terms, queries, sources and questions written. The Reddit and X tables are candidates only; nothing verified yet |
 | §5 Reddit discussions | **Not started** |
 | §6 X discussions | **Not started** |
-| §7 discussion record | Not started — template |
+| §7 discussion record | **Started** — one exchange logged, on r/sysadmin |
 | §8 agent design | Not started |
 | §9 experiment | Not started |
 | §10 probability decision record | Not started — template |
