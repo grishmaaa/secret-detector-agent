@@ -56,14 +56,14 @@ The second half is the part I care about. A rule that wins under every assumptio
 |---|---|
 | §3 problem statement | **Done** — stated above and in `research-file.md` |
 | §4 research file | **Mostly done** — terms, queries, sources and questions written. The Reddit and X tables are candidates only; nothing verified yet |
-| §5 Reddit discussions | **Not started** |
+| §5 Reddit discussions | **Barely started** — one post, one substantive reply. The targets are ten contributions across five communities |
 | §6 X discussions | **Not started** |
 | §7 discussion record | **Started** — one exchange logged, on r/sysadmin |
-| §8 agent design | Not started |
+| §8 agent design | **Half designed, nothing built** — input, hidden states, actions and costs are settled. Beliefs, policy and feedback are not, and no code exists |
 | §9 experiment | Not started |
 | §10 probability decision record | Not started — template |
 | §11 AI reviews | Not started — template |
 | §13 preprint | Not started |
 | §14 publication | Not started |
 
-The public-discussion requirements — §5 and §6 — are essentially unmet, and I would rather say so on the front page than let a marker discover it. They are also the requirements nobody else can do for me, and the ones the cost numbers this agent depends on are supposed to come from. Every other gap above is work I know how to do; that one is not.
+The public-discussion requirements — §5 and §6 — are essentially unmet, and I would rather say so on the front page than let a marker discover it. They are also the requirements nobody else can do for me, and the ones the cost numbers this agent depends on are supposed to come from. Every other gap above is work I know how to do; that one is not. It is also the reason every number in my cost model is currently invented — those figures are supposed to come from people who have done this, and so far one person has told me anything.

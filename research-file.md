@@ -113,7 +113,21 @@ What is left that costs me nothing to look at:
 - the commit that introduced it: who, when, and what the message said
 - whether the same string appears in other public repositories
 
-Every one of those mostly attacks **fake**. Nothing free separates live from revoked. So my free evidence and my probe are strong at opposite ends of the state space, and the pair that matters most — live versus revoked — is exactly where I am thinnest. That is uncomfortable and I think it is the real shape of the problem rather than a gap in my design.
+Every one of those mostly attacks **fake**. Nothing free separates live from revoked.
+
+So my evidence is lopsided: five pieces pointing at one state and one piece, weakly, at the pair that matters. My first reaction was that this is a gap in my design and that I should go and find more evidence to balance it.
+
+I no longer think that. **The imbalance is the finding.**
+
+A live key and a revoked key are the same string, in the same file, committed by the same person on the same day. Nothing about the repository distinguishes them, because revocation happens somewhere else entirely — at the provider, after the commit was written. There is no observation I could add to the repository side that would separate them, no matter how carefully I looked.
+
+That explains three things I had been treating as separate:
+
+- **Why the human baseline exists at all.** Escalate-everything is not laziness. It is the correct response to a state pair with no local observable — you have to ask the only party that knows.
+- **Why the probe carries so much weight.** It is not one evidence source among six. It is the only thing that reaches the side of the problem the repository cannot see, which is why an agent without an investigate action would be close to useless here.
+- **Why adding more free evidence would not help.** A seventh signal that attacks *fake* costs me three more invented likelihoods and buys nothing, because that side is already well covered.
+
+I would rather record this as the shape of the problem than quietly go looking for evidence that does not exist.
 
 ### Two things I learned from Stripe's documentation and kept
 
@@ -122,6 +136,77 @@ I read Stripe's key documentation before dropping it, and two things there are w
 **`pk_live_` is safe to expose.** Stripe's publishable keys are meant to sit in front-end code. A `pk_live_` in a repository is a live production key and finding it is not an incident. So "live" and "dangerous" are not the same property, and my state 1 currently bundles them. Whether blast radius needs to be a separate axis is open — OpenAI's version of the question is an admin key versus a project key.
 
 **The cost of a wrong remediation belongs to the provider, not to the problem.** Stripe gives a seven-day grace period on rotation — old and new keys both work while you migrate. OpenAI revokes in seconds, with no grace. The same mistake costs wildly different amounts depending on who issued the key. My provider choice made remediation harder, and that is worth knowing rather than discovering later.
+
+### The cost model
+
+Everything is priced in **engineer-minutes**. I picked that unit because it is the one people can actually estimate — someone will tell you "rotating that key took us about two hours", and nobody will tell you it cost 340 units. If I want real numbers from practitioners, I have to ask in a currency they think in.
+
+**What the unit cannot express.** I am pricing a breach as the hours my team would spend responding to it. That is the part I can estimate. It leaves out harm to customers, which does not turn into my team's time, so my number for a missed live key is almost certainly too low.
+
+**Scope: project keys only.** OpenAI issues admin keys as well, and an admin key is a different problem — it can create keys and act as the organisation, so the damage is unbounded rather than capped by a spend limit. Pricing one cell to cover both would mean either treating every finding as catastrophic or averaging the catastrophic case away. I am modelling project keys and leaving admin keys out.
+
+#### What the cost actually depends on
+
+Before I could put a number on dismissing a live key, I had to work out that it is not one number at all:
+
+> cost = (chance someone finds and uses it) × (damage if they do)
+
+A key in a repository that has been private for years is unlikely to be found. A key in one that was public for two weeks will have been scraped within minutes. And a project key with a spend cap does bounded damage where an admin key does not. Narrowing to project keys pins the second factor; the first is still varying underneath my single number, and that is one reason it is the number I sweep.
+
+#### The components
+
+| Piece | Minutes |
+|---|---|
+| Revoke a key | 2 |
+| Issue a new key | 10 |
+| Run the probe | 10 |
+| Human attention | 30 |
+| Find the consumers — documented | 30 |
+| Find the consumers — undocumented | 480 |
+| Deploy | 60 |
+| Verify nothing is calling the old key | 10 |
+| Production down while someone scrambles | 240 |
+
+#### The matrix
+
+| | Live | Revoked | Fake |
+|---|---|---|---|
+| **Dismiss** | **2400** | 2 | 2 |
+| **Investigate** | 10 | 10 | 10 |
+| **Escalate** | 150 | 30 | 30 |
+| **Revoke now** | 330 | 2 | 5 |
+| **Rotate safely** | **120** | 30 | 20 |
+
+The three cells that needed working out:
+
+- **Rotate safely on a live key = 120.** `10 issue + 30 find + 60 deploy + 10 verify + 2 revoke = 112`. This assumes the consumers are documented.
+- **Revoke now on a live key = 330.** `2 revoke + 240 outage + 30 find + 60 deploy = 332`. Exactly the same hunt and the same deploy as rotating safely — but production is down while it happens. **The outage term is the entire difference between my two remediation actions.**
+- **Escalate on a live key = 150.** `30 human attention + 120 they rotate safely`. Escalation can never be cheaper than the action the human then takes; it is that action plus their attention.
+
+Dismissing a revoked or fake key is 2 rather than 0, because the finding comes back on the next scan and someone dismisses it again. Investigating costs the same in every column because the probe is paid for before I know which column I am in.
+
+**Sanity check.** If I knew a key was live, the ordering is rotate safely (120) < escalate (150) < revoke now (330) < dismiss (2400). That is what it should be: rotating is the right thing, escalating costs a little more because it spends a person, revoking now costs the outage, and dismissing costs the breach.
+
+#### When revoke-now is the right call
+
+If rotating safely were always cheaper, I would not need two remediation actions — I would always rotate safely. The reason to keep both is that something flips it.
+
+That something is **active abuse**. If someone is using the key right now, every minute spent on the careful procedure is another minute of someone else running my account. At that point breaking my own production deliberately costs less than letting the abuse continue.
+
+And the probe tells me which case I am in. Recent activity I do not recognise means abuse in progress. So `last_used_at` does three jobs from one call: which state I am in, what remediation will cost, and which of my two remediation actions to choose.
+
+#### The two numbers I sweep
+
+Everything above is elicited. Two numbers are shakier than the rest and both get swept rather than asserted:
+
+- **Dismissing a live key (2400).** Range 240 to 24,000. It is the largest number in the matrix, it is the one my unit is worst at expressing, and it depends on exposure I have not modelled.
+- **Finding the consumers (30).** Range 30 to 480, straight from the practitioner reply — an hour if someone wrote it down, a day if nobody did. This one moves rotate-safely to about 570 and revoke-now to about 780 *together*, because both actions contain the same hunt.
+
+#### Two things this matrix cannot say
+
+**It adds minutes belonging to different people.** Mine, the reviewer's, the on-call engineer's, and — inside the breach number — time that is really the customer's problem rather than anyone's minutes at all. They are not the same currency. An agent that spends someone else's time to save its own would look good by this measure, and I have not guarded against that.
+
+**It cannot tell expensive apart from permanent.** A wrong dismissal of a fake key is caught by the next scan. A wrong revocation takes production down for hours and then everything is fine. A missed live key that gets used never unwinds. One number per cell cannot express that difference. I am leaving it as one number and sweeping the missed-live cost across a wide range instead, which covers the "worse than the minutes suggest" case without adding machinery I would then have to justify.
 
 ## Technical Terms
 
