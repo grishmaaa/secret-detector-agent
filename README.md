@@ -6,35 +6,37 @@ A cost-aware triage agent for secret-scanner findings. Week 1 project for the AI
 
 A scanner reads a repository and reports that some string in it looks like a key. That is the entire input. It does not say what kind of key, and it does not say whether the key works.
 
-> The agent observes a scanner result reporting that a string in the repository looks like a key. It must select **dismiss**, **investigate**, **escalate**, or **remediate**, because whether that string is a live production key, a dead production key, a provider-issued test key, or a fake key hard-coded by a developer is not known.
+> The agent observes a scanner result reporting that a string in the repository looks like an OpenAI key. It must select **dismiss**, **investigate**, **escalate**, **revoke now**, or **rotate safely**, because whether that string is a live key, a revoked key, or a fake key hard-coded by a developer is not known.
 
-Four things the string could turn out to be:
+Three things the string could turn out to be:
 
-1. **A live production key** — real, still authenticates, with real consequences behind it.
-2. **A dead production key** — was real once, no longer works.
-3. **A provider-issued test key** — the API provider hands these out for testing. They do authenticate, but against a sandbox.
-4. **A fake key** — hard-coded by a developer, never authenticated against anything.
+1. **A live key** — still authenticates. Whatever sits behind it is reachable by anyone holding the string.
+2. **A revoked key** — was real once, no longer works. Harmless now.
+3. **A fake key** — hard-coded by a developer, never authenticated against anything.
 
-I am not confident that list is complete. I think there may be a fifth case: a string that is not a key at all and just happens to look like one, because something else in the code needed a long random-looking string. I cannot characterise it well enough yet to put it in the list, so I have left it out rather than guessing at it. It is one of the things I want to ask about on Reddit.
+I am not confident that list is complete. I think there may be a fourth case: a string that is not a key at all and just happens to look like one, because something else in the code needed a long random-looking string. I cannot characterise it well enough yet to put it in the list, so I have left it out rather than guessing at it.
 
-The four actions:
+The five actions:
 
 - **Dismiss** — do nothing.
 - **Investigate** — buy more information. The agent still makes the decision afterwards, and it can still escalate later if what it learned did not settle anything.
 - **Escalate** — hand it to a human. The human makes the decision.
-- **Remediate** — rotate the key.
+- **Revoke now** — kill the key immediately. Fast, certain, and it breaks anything still using it.
+- **Rotate safely** — issue a replacement, update whatever used the old key, confirm nothing is still calling it, then revoke. No outage, but it costs a deploy cycle.
 
-Investigate and escalate are separate actions because of what happens after them. After investigating, the agent still owns the decision. After escalating, it does not. Folding the two together would hide the difference between spending my own effort and spending someone else's.
+Investigate and escalate are separate because of who owns the decision afterwards. Revoke-now and rotate-safely are separate because leaving a system broken in order to be safe is not automatically the right call, and an agent that cannot express that difference cannot help me decide.
+
+Revocation is the only thing that makes an exposed string worthless — deleting it from the file achieves nothing, since it stays in the git history and in every clone anyone made. My agent does not perform any of this. It decides whether the expensive human procedure is warranted. Triage, not repair.
 
 ## Scope
 
-**Repository level only.** Not cloud configuration, and not credentials in a running process. I wanted something small enough to test and small enough to understand, and the repository is where I can actually see what is going on. The other levels are possible later if there is time.
+**Findings originate in a repository.** Not cloud configuration, not credentials in a running process. This scopes where the decision starts. It does not mean the agent may only look at the repository — investigate is precisely the action that reaches outside it.
 
-**A restricted set of providers and key types**, not every key a repository might contain. Telling different providers' key formats apart is substantial work on its own, and the states depend on the provider anyway — so narrowing this is not just a convenience.
+**One provider: OpenAI.** I started intending to use two — one that issues test keys and one that does not — and dropped it because the complexity was compounding faster than the insight. OpenAI issues no separate test key, which is why my state space is three rather than four. The trade is deliberate: I gave up a state to gain a probe I could verify.
 
-**One finding at a time.** The agent decides about a single flagged string. It does not decide whether a repository as a whole is compromised.
+**One finding at a time.** The agent decides about a single flagged string, not whether a whole repository is compromised.
 
-I have not chosen the providers yet. The criterion I settled on is to pick providers where all four states can genuinely occur, and to check that they can before committing to them.
+**It is a simulation.** No admin credential, no live API calls. Every likelihood is my estimate rather than a measurement, so the honest result is a sensitivity analysis, not a point estimate.
 
 ## Objective
 
