@@ -208,6 +208,131 @@ Everything above is elicited. Two numbers are shakier than the rest and both get
 
 **It cannot tell expensive apart from permanent.** A wrong dismissal of a fake key is caught by the next scan. A wrong revocation takes production down for hours and then everything is fine. A missed live key that gets used never unwinds. One number per cell cannot express that difference. I am leaving it as one number and sweeping the missed-live cost across a wide range instead, which covers the "worse than the minutes suggest" case without adding machinery I would then have to justify.
 
+### The belief
+
+The agent has to hold a probability over the three states and update it as evidence arrives. This is where the numbers get invented most heavily, so I want the reasoning next to them.
+
+#### The prior
+
+Before looking at anything about a particular finding:
+
+| State | Prior |
+|---|---|
+| Live | 0.48 |
+| Revoked | 0.27 |
+| Fake | 0.25 |
+
+This is derived rather than guessed, which is its only real virtue. GitHub's scanner reports about 75% precision, so roughly three-quarters of findings are real credentials and a quarter are not. GitGuardian reports that around 64% of credentials valid in 2022 were still valid in 2026, so of the real ones, roughly two-thirds are still live. That gives 0.75 × 0.64 = 0.48 live, 0.75 × 0.36 = 0.27 revoked, and 0.25 fake.
+
+**Choosing GitHub's scanner made my problem easier, and that is a scope decision.** At 75% precision most findings are real keys. Had I assumed one of the open-source scanners the same study measured at under 7%, fake would dominate and the agent's main job would be filtering junk instead of deciding what to do. Different detector, different problem.
+
+**The mapping is not clean.** Precision counts a finding as a false positive when it is *not a credential*. My fake state means *a developer hard-coded something that was never real* — and a well-formed fake still matches the pattern, so a scanner would count it as a hit. So my 0.25 is really covering two things: fake keys, and the fourth state I could not characterise. I have been forced to lump them together because that is the only figure available. It is a concrete reason the fourth state matters.
+
+#### Collapsing the evidence
+
+I started with six pieces of evidence and cut them to three, for two different reasons.
+
+**Three of them were one thing wearing three hats.** File path, surrounding variable name, and commit message almost always agree: a key in `.env.example` is called `YOUR_KEY_HERE` and was committed as "add example config". Treating them as three independent votes would make the model count the same evidence three times and grow more confident while getting no better informed. They are now one feature, **placeholder context**.
+
+**One was miscategorised.** Checking whether the same string appears in other public repositories is not free — it means searching somewhere outside my repository, which is the same kind of act as calling the API. It is a second probe, not free evidence, and it would need its own cost and its own likelihoods with nothing to base them on. Identified, priced out, and deferred.
+
+That leaves:
+
+| Feature | Values | Free or bought |
+|---|---|---|
+| Placeholder context | placeholder / neutral / production | Free |
+| Well-formedness | well-formed / malformed | Free |
+| `last_used_at` | recent / old / null | Bought |
+
+Twenty-four invented numbers instead of the fifty-odd the original six would have needed, and none of them counting the same thing twice.
+
+#### The likelihoods
+
+`P(evidence | state)`. Every row sums to 1.
+
+**Placeholder context**
+
+| | placeholder | neutral | production |
+|---|---|---|---|
+| Live | 0.10 | 0.30 | 0.60 |
+| Revoked | 0.10 | 0.30 | 0.60 |
+| Fake | 0.70 | 0.25 | 0.05 |
+
+A real key is committed by accident into wherever the code actually lives, so it skews production. The 0.10 on placeholder is not zero because of the config-drift case the practitioner described — a real key sitting in a sample file because the published config and the effective one diverged years earlier.
+
+**Well-formedness**
+
+| | well-formed | malformed |
+|---|---|---|
+| Live | 0.99 | 0.01 |
+| Revoked | 0.99 | 0.01 |
+| Fake | 0.40 | 0.60 |
+
+Real keys are always well-formed; they came from OpenAI. Fakes split, because some people type `sk-xxxxxxxx` and others copy a realistic-looking string out of the documentation.
+
+**`last_used_at`**
+
+| | recent | old | null |
+|---|---|---|---|
+| Live | 0.60 | 0.20 | 0.20 |
+| Revoked | 0.02 | 0.78 | 0.20 |
+| Fake | 0.01 | 0.04 | 0.95 |
+
+A revoked key cannot produce recent activity, but its timestamp is frozen at whenever it last worked, so it skews old. Fake is overwhelmingly null because the key was never in the account at all.
+
+#### What these tables say out loud
+
+**On both free features, live and revoked have identical rows.** Not similar — identical. I did not impose that; it is what I believe to be true, and it is the evidence-imbalance finding turned into numbers. Nothing observable in a repository distinguishes a live key from a revoked one.
+
+#### The update rule
+
+Standard Bayes. For each state, multiply the prior by the likelihood of every piece of evidence observed, then normalise so the three sum to 1:
+
+```
+posterior(s) ∝ prior(s) × P(context | s) × P(form | s) × P(probe | s)
+```
+
+Worked through, on a finding in production context with a well-formed string:
+
+**With free evidence only**
+
+| State | Prior | × context | × form | Posterior |
+|---|---|---|---|---|
+| Live | 0.48 | 0.60 | 0.99 | **0.6329** |
+| Revoked | 0.27 | 0.60 | 0.99 | **0.3560** |
+| Fake | 0.25 | 0.05 | 0.40 | **0.0111** |
+
+Fake is crushed from 0.25 to 0.011 — the free evidence does its job well. But look at the ratio of live to revoked: it was 0.48/0.27 = **1.778** before, and it is 0.6329/0.3560 = **1.778** after.
+
+Identical. To four decimal places. The free evidence moved the live-versus-revoked balance **not at all**, because both states have the same likelihood on both features, so the multiplication cancels. My finding is not a claim about the model — it is arithmetic.
+
+**Then the probe returns `old`**
+
+| State | Posterior before | × probe | Posterior after |
+|---|---|---|---|
+| Live | 0.6329 | 0.20 | **0.3128** |
+| Revoked | 0.3560 | 0.78 | **0.6861** |
+| Fake | 0.0111 | 0.04 | **0.0011** |
+
+The ratio goes from 1.778 to 0.456 — the belief flips from probably-live to probably-revoked, and one call did all of it. That is what it means for a single piece of evidence to be load-bearing.
+
+#### Two states or three?
+
+Worth recording that I checked. My cost matrix gives revoked and fake nearly identical rows — every action costs about the same whichever it is — so for choosing an *action*, they are effectively one state and I could have collapsed to live / not-live.
+
+I kept three. Not because the costs earn it, but because the evidence separates them cleanly for free, and because "this was never a key" and "this key is dead" are different things to tell a person. A model that can only say *dismissable* is less useful to a human than one that can say why.
+
+#### The obvious next upgrade
+
+My `null` outcome is doing two jobs: *the key is in my account and was never used*, and *the key is not in my account at all*. Those are very different, and splitting them would make the only probe I have substantially stronger.
+
+Whether it is worth building depends on something I have not checked: **does OpenAI keep revoked keys in the project list, marked inactive, or delete them?**
+
+- If they are **kept and flagged**, then a key that is present-but-inactive is *known* to be dead rather than merely probably dead, and my hardest uncertainty stops being uncertain at all.
+- If they are **deleted**, absence covers fake, revoked, and keys belonging to someone else's account — and it barely helps with the pair I care about.
+
+Same upgrade, wildly different value, and one lookup settles it. Doing that before I write any code.
+
 ## Technical Terms
 
 | Term | What it means, as I understand it |

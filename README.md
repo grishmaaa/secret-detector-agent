@@ -59,7 +59,7 @@ The second half is the part I care about. A rule that wins under every assumptio
 | §5 Reddit discussions | **Barely started** — one post, one substantive reply. The targets are ten contributions across five communities |
 | §6 X discussions | **Not started** |
 | §7 discussion record | **Started** — one exchange logged, on r/sysadmin |
-| §8 agent design | **Half designed, nothing built** — input, hidden states, actions and costs are settled. Beliefs, policy and feedback are not, and no code exists |
+| §8 agent design | **Five of seven parts designed, nothing built** — input, hidden states, actions, costs and beliefs are settled. Policy and feedback are not, and no code exists |
 | §9 experiment | Not started |
 | §10 probability decision record | Not started — template |
 | §11 AI reviews | Not started — template |
