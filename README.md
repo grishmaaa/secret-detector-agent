@@ -56,10 +56,10 @@ The second half is the part I care about. A rule that wins under every assumptio
 |---|---|
 | §3 problem statement | **Done** — stated above and in `research-file.md` |
 | §4 research file | **Mostly done** — terms, queries, sources and questions written. The Reddit and X tables are candidates only; nothing verified yet |
-| §5 Reddit discussions | **Barely started** — one post, one substantive reply. The targets are ten contributions across five communities |
+| §5 Reddit discussions | **Started** — two posts, five substantive replies. The targets are ten contributions across five communities |
 | §6 X discussions | **Not started** |
-| §7 discussion record | **Started** — one exchange logged, on r/sysadmin |
-| §8 agent design | **Five of seven parts designed, nothing built** — input, hidden states, actions, costs and beliefs are settled. Policy and feedback are not, and no code exists |
+| §7 discussion record | **Started** — two threads logged, both with design consequences |
+| §8 agent design | **Fully designed, nothing built** — all seven parts settled: input, hidden states, beliefs, actions, costs, policy, feedback. No code exists yet |
 | §9 experiment | Not started |
 | §10 probability decision record | Not started — template |
 | §11 AI reviews | Not started — template |

@@ -129,6 +129,10 @@ That explains three things I had been treating as separate:
 
 I would rather record this as the shape of the problem than quietly go looking for evidence that does not exist.
 
+**And it is a property of API keys, not of credentials generally.** A practitioner answering about certificates pointed out that a certificate carries a CRL distribution point — a pointer to its own revocation list — so you can check almost instantly whether it has been revoked. The credential tells you its own status. Live-versus-revoked, the pair I cannot separate and the pair my probe exists to attack, is a solved problem for a different credential type.
+
+PKI solved it with revocation lists decades ago. An OpenAI key has no equivalent: no revocation list, no status field, nothing in the string. So the imbalance is not a fact about leaked secrets — it is a fact about the credential format I chose, and a different choice would have made the whole project easier and less interesting.
+
 ### Two things I learned from Stripe's documentation and kept
 
 I read Stripe's key documentation before dropping it, and two things there are worth carrying even though I am not using the provider.
@@ -142,6 +146,8 @@ I read Stripe's key documentation before dropping it, and two things there are w
 Everything is priced in **engineer-minutes**. I picked that unit because it is the one people can actually estimate — someone will tell you "rotating that key took us about two hours", and nobody will tell you it cost 340 units. If I want real numbers from practitioners, I have to ask in a currency they think in.
 
 **What the unit cannot express.** I am pricing a breach as the hours my team would spend responding to it. That is the part I can estimate. It leaves out harm to customers, which does not turn into my team's time, so my number for a missed live key is almost certainly too low.
+
+A practitioner later gave me a second gap I had not thought of: revoking a certificate issued by a public CA costs **actual money**, a few hundred dollars, which is not anyone's time either. And they described a case where no action helps at all — an exposed GPG master signing key with no revocation certificate published in advance. My matrix has a cell for every action in every state; it has no way to say *nothing works*.
 
 **Scope: project keys only.** OpenAI issues admin keys as well, and an admin key is a different problem — it can create keys and act as the organisation, so the damage is unbounded rather than capped by a spend limit. Pricing one cell to cover both would mean either treating every finding as catastrophic or averaging the catastrophic case away. I am modelling project keys and leaving admin keys out.
 
@@ -200,7 +206,8 @@ And the probe tells me which case I am in. Recent activity I do not recognise me
 Everything above is elicited. Two numbers are shakier than the rest and both get swept rather than asserted:
 
 - **Dismissing a live key (2400).** Range 240 to 24,000. It is the largest number in the matrix, it is the one my unit is worst at expressing, and it depends on exposure I have not modelled.
-- **Finding the consumers (30).** Range 30 to 480, straight from the practitioner reply — an hour if someone wrote it down, a day if nobody did. This one moves rotate-safely to about 570 and revoke-now to about 780 *together*, because both actions contain the same hunt.
+- **Finding the consumers (30).** Originally swept 30 to 480 — an hour if someone wrote it down, a day if nobody did. **A practitioner then suggested timeboxing it**: if the rotation is not going smoothly after ten or fifteen minutes, stop. That caps the tail rather than leaving it open, and it is the answer to a question I thought only a sweep could handle.
+- **The live-versus-revoked split inside the prior.** Sweep 40/60 to 80/20, which moves P(live) between roughly 0.30 and 0.60. This one is swept for a reason the others are not: **my evidence cannot correct it.** Live and revoked have identical likelihood rows on both free features, so whatever I assume here flows straight through to every posterior untouched. A prior the evidence cannot move is a prior I am merely asserting.
 
 #### Two things this matrix cannot say
 
@@ -322,16 +329,138 @@ Worth recording that I checked. My cost matrix gives revoked and fake nearly ide
 
 I kept three. Not because the costs earn it, but because the evidence separates them cleanly for free, and because "this was never a key" and "this key is dead" are different things to tell a person. A model that can only say *dismissable* is less useful to a human than one that can say why.
 
-#### The obvious next upgrade
+#### An upgrade I checked and then dropped
 
-My `null` outcome is doing two jobs: *the key is in my account and was never used*, and *the key is not in my account at all*. Those are very different, and splitting them would make the only probe I have substantially stronger.
+My `null` outcome does two jobs: *the key is in my account and was never used*, and *the key is not in my account at all*. Splitting them looked like the obvious way to strengthen my only probe, and whether it was worth building depended on one thing — does OpenAI keep revoked keys in the project list marked inactive, or delete them?
 
-Whether it is worth building depends on something I have not checked: **does OpenAI keep revoked keys in the project list, marked inactive, or delete them?**
+I looked it up. **It deletes them.** The delete endpoint returns `{"deleted": true, "object": "organization.project.api_key.deleted"}`, which is the shape of a removal rather than a status change.
 
-- If they are **kept and flagged**, then a key that is present-but-inactive is *known* to be dead rather than merely probably dead, and my hardest uncertainty stops being uncertain at all.
-- If they are **deleted**, absence covers fake, revoked, and keys belonging to someone else's account — and it barely helps with the pair I care about.
+Worse, there is a case I had not considered. A developer reported a key that still worked but did not appear in the API keys tab at all — it turned out to be a *legacy user-level key*, which lives at a different endpoint from project keys. Nobody from OpenAI explained why.
 
-Same upgrade, wildly different value, and one lookup settles it. Doing that before I write any code.
+So "not in the list" covers four things: the key was fake, the key was revoked and deleted, the key belongs to another account, or **the key is real and live and sitting at an endpoint I did not query.** One of those points the opposite way from the other three.
+
+I am not building the split. Absence is ambiguous four ways and the three-value `last_used_at` I already have is the honest model. Recording it because a lookup that closes an option is as useful as one that opens it, and I would otherwise have spent a day on it.
+
+### The policy
+
+#### The rule
+
+```
+a* = argmin over actions of   Σ  P(state) × cost(action, state)
+                            states
+```
+
+That is the whole thing. **I never chose a threshold.** I set fifteen costs for reasons that had nothing to do with where a decision boundary should sit, and the boundary came out of them.
+
+At my prior — 0.48 live, 0.27 revoked, 0.25 fake:
+
+| Action | Expected cost |
+|---|---|
+| Dismiss | 1153.04 |
+| Escalate | 87.60 |
+| Revoke now | 160.19 |
+| **Rotate safely** | **70.70** |
+
+#### Three regimes I did not design
+
+Sweeping P(live) from 0 to 1 and asking which action is cheapest:
+
+| P(live) | Cheapest action |
+|---|---|
+| below 0.0007 | Dismiss |
+| 0.0007 – 0.0939 | **Revoke now** |
+| above 0.0939 | **Rotate safely** |
+
+The middle band is the one I did not expect. If a key is *probably dead*, revoking now is cheaper than rotating safely — there are no consumers to migrate, so you skip the deploy entirely and just kill it.
+
+Each of my two remediation actions owns a region, and neither dominates. That is a justification for splitting them that arrived after the fact, from a completely different direction than the argument I made at the time. I find that more convincing than the argument I made.
+
+#### The agent never escalates, and I can prove it
+
+Escalate does not appear in that table at any value of P(live). My first thought was that the model must be overconfident. It is not.
+
+Take the belief where the agent is *maximally* confused — 1/3, 1/3, 1/3, entropy 1.585 bits, the most uncertain a three-state belief can be:
+
+| Action | Expected cost |
+|---|---|
+| **Rotate safely** | **56.67** |
+| Escalate | 71.33 |
+| Revoke now | 112.33 |
+| Dismiss | 801.33 |
+
+The agent knows nothing at all and still does not want a human.
+
+The reason is that **rotate-safely is a hedge**. It costs 120 / 30 / 20 — tolerable in every state. When one action is decent no matter what is true, being confused costs almost nothing, so there is nothing worth paying to resolve.
+
+Put precisely: the value of perfect information — what an oracle telling me the true state would be worth — is at most **24.64 engineer-minutes anywhere on the belief simplex**. A human costs 30. Even a perfect oracle is not worth asking.
+
+#### What I got wrong about entropy
+
+I assumed high entropy was what should trigger escalation. That is the obvious rule and it is what I would have built. It is wrong, and the reason is worth stating because I will otherwise make the mistake again.
+
+Two roads at a fork, 50/50, no idea which. Maximum uncertainty. Do you phone someone for directions? Not if both roads lead to the same town.
+
+A fire alarm you are 95% sure is real. Very low entropy. Do you want a human deciding whether to evacuate five hundred people? Badly.
+
+**Entropy measures how confused I am. It does not measure whether my confusion is expensive.** Those come apart, and when they do, entropy sends you to the wrong answer. My agent is at the fork.
+
+Entropy still has a job in this project — measuring how many bits a probe removes — but it is not the escalation trigger. **The cost of being wrong is.**
+
+#### The knife-edge
+
+Escalation lives or dies on one number: what it costs to rotate something that did not need rotating.
+
+| Wasted rotation | Max VPI | Escalation ever optimal? |
+|---|---|---|
+| 20 min | 16.74 | no |
+| 30 min | 24.92 | no |
+| **~40 min** | **~30** | **the boundary** |
+| 50 min | 39.36 | yes |
+| 100 min | 67.17 | yes |
+
+I estimated 20–30 minutes. The boundary is about 40. **I am sitting roughly twenty minutes below a result flipping**, on a number that was one of the softest guesses in the whole matrix.
+
+So I asked. A practitioner's answer: already revoked, minutes; never a real key, minutes; a key belonging to a project abandoned two years ago, hours — but no rotation attempted. Another suggested timeboxing at ten to fifteen minutes. Between them that puts me below 40 for practical reasons rather than by assumption, and escalation stays out.
+
+It stays in the action set regardless. Removing it would mean I could not express my own baseline, and "the agent never escalates" is only sayable if it could have.
+
+#### The four policies
+
+The ladder, each rung adding exactly one thing, so the experiment can measure what each one buys:
+
+| | What it uses | Threshold |
+|---|---|---|
+| **P0** | The prior only, no evidence | none — one action for everything |
+| **P1** | Free evidence, Bayes, hand-picked threshold | P(live) > 0.5, because 0.5 feels right |
+| **P2** | Free evidence, Bayes, expected cost | **0.0939**, derived |
+| **P3** | P2 plus the probe, bought when it pays | Week 2 |
+
+**Baseline:** escalate-everything. Never wrong, always costs a human.
+
+P1 against P2 is the comparison worth running. They see identical evidence and form identical beliefs. The only difference is where the line sits — 0.5 versus 0.0939, a factor of five. Every finding I am between 10% and 50% confident about, P1 walks away from and P2 acts on.
+
+That makes the experiment answer something sharper than "does probability help", which is obvious and boring. It answers: **does deriving the threshold from costs, rather than picking a round number, change what the agent does?**
+
+### Feedback
+
+The last of §8's seven parts, and the honest answer is uncomfortable.
+
+| Action | What comes back |
+|---|---|
+| Rotate safely | The true state, reliably — I look the key up to issue a replacement and find out what it was |
+| Revoke now | Whether it was live, via what broke |
+| Escalate | The human's answer, if the system captures it |
+| **Dismiss** | **Nothing. Ever.** |
+
+Rotating reveals the truth as a *side effect* of acting. Nobody designed that; it falls out of the procedure. Dismissing reveals nothing at all — I close the finding and walk away, and the only way I ever learn a dismissal was wrong is a breach, which is late, expensive and rare.
+
+**That asymmetry is the finding.** An agent learning from its own outcomes would only ever learn about findings it chose to act on. It would get steadily better at keys it rotates and never once discover it was wrong about the ones it dismissed — which are exactly the errors that matter. It would drift toward dismissing, because dismissals never generate contradicting evidence.
+
+Structural confirmation bias, not a bug I could fix by being more careful. So the loop exists and I am documenting why I do not close it.
+
+**Investigate is not part of this table**, and it took me a moment to see why. The other four are terminal — the case closes and whatever comes back arrives afterwards, by accident. Investigate returns *evidence*, immediately, into the same decision. It is not feedback; it is an input, and I have already modelled it in the likelihood tables.
+
+Which points at something worth noticing: **investigate is the only channel whose return I designed.** Everything the other four teach me is a by-product of doing something else.
 
 ## Technical Terms
 
@@ -378,7 +507,7 @@ What I noticed about searching this topic: security-vendor content dominates the
 
 ## Verified Reddit Communities
 
-I have only verified one of these so far — r/sysadmin, by posting there and getting a real answer. For the rest I still need to open each one, check the date of the newest post, read the rules, and see whether a technical question gets answered or removed.
+I have verified two of these so far — r/sysadmin and r/devops, by posting in each and getting real answers. For the rest I still need to open each one, check the date of the newest post, read the rules, and see whether a technical question gets answered or removed.
 
 | # | Subreddit | Why It Is Relevant | Verified Active? |
 |---|-----------|-------------------|-----------------|
@@ -386,7 +515,7 @@ I have only verified one of these so far — r/sysadmin, by posting there and ge
 | 2 | r/AskNetsec | Explicitly a question subreddit, so a beginner question is on-topic rather than merely tolerated | [ ] |
 | 3 | r/sysadmin | The people who feel the cost when a rotation breaks something. My cost thinking is weakest on that side | [x] — posted, got a substantive reply from a practitioner |
 | 4 | r/ExperiencedDevs | Developers who receive these alerts and decide whether to act on them | [ ] |
-| 5 | r/devops | Rotation runbooks, and who actually does the rotating | [ ] |
+| 5 | r/devops | Rotation runbooks, and who actually does the rotating | [x] — posted, four substantive replies including the PKI one |
 | 6 | r/netsec | Strict and link-oriented. Better for sharing a finished preprint than for asking questions | [ ] |
 | 7 | r/cybersecurity | Large and generalist. Useful for the consequence questions, possibly too broad for depth | [ ] |
 
