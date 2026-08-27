@@ -56,14 +56,14 @@ The second half is the part I care about. A rule that wins under every assumptio
 |---|---|
 | §3 problem statement | **Done** — stated above and in `research-file.md` |
 | §4 research file | **Mostly done** — terms, queries, sources and questions written. The Reddit and X tables are candidates only; nothing verified yet |
-| §5 Reddit discussions | **Started** — two posts, five substantive replies. The targets are ten contributions across five communities |
+| §5 Reddit discussions | **Started** — two posts, eight substantive replies. The targets are ten contributions across five communities |
 | §6 X discussions | **Not started** |
-| §7 discussion record | **Started** — two threads logged, both with design consequences |
-| §8 agent design | **Fully designed, nothing built** — all seven parts settled: input, hidden states, beliefs, actions, costs, policy, feedback. No code exists yet |
-| §9 experiment | Not started |
+| §7 discussion record | **Started** — two threads logged in full. One reply repriced a cost and changed a result |
+| §8 agent design | **Done** — all seven parts settled and implemented in `experiments/run_experiment.py` |
+| §9 experiment | **Done** — four policies against the baseline on forty frozen cases. Results in `results/findings.md` |
 | §10 probability decision record | **Done** — one finding worked end to end in `decisions/` |
 | §11 AI reviews | Not started — template |
 | §13 preprint | Not started |
 | §14 publication | Not started |
 
-The public-discussion requirements — §5 and §6 — are essentially unmet, and I would rather say so on the front page than let a marker discover it. They are also the requirements nobody else can do for me, and the ones the cost numbers this agent depends on are supposed to come from. Every other gap above is work I know how to do; that one is not. It is also the reason every number in my cost model is currently invented — those figures are supposed to come from people who have done this, and so far one person has told me anything.
+The public-discussion requirements — §5 and §6 — are essentially unmet, and I would rather say so on the front page than let a marker discover it. They are also the requirements nobody else can do for me, and the ones the cost numbers this agent depends on are supposed to come from. Every other gap above is work I know how to do; that one is not. It is also the reason every number in my cost model is currently invented — those figures are supposed to come from people who have done this. That has started to change: the probe's cost is now the one number in my matrix that came from practitioners rather than from me, and correcting it changed which actions the agent takes.
