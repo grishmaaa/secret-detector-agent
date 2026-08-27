@@ -7,7 +7,7 @@ Every public contribution, and what it changed. A link on its own does not count
 | Platform | Community or Account | Link | My First Contribution | Human Answer | My Next Answer | Design Change |
 |----------|---------------------|------|-----------------------|-------------|----------------|---------------|
 | Reddit | r/sysadmin | https://www.reddit.com/r/sysadmin/comments/1vqomq7/secretscanner_triage/ | Asked whether rotating a credential has ever actually broken something, and roughly what it cost | Yes — and it was always a key nobody had documented as live. Also: do not tune the ratio, verify the key instead; and log which consumer last used the credential | Not yet replied | Adding last-consumer telemetry as a candidate piece of evidence; adding a question about whether that evidence is obtainable at all |
-| Reddit | r/devops | https://www.reddit.com/r/devops/comments/1vzk0v2/cost_of_rotating_a_revoked_key/ | Asked how long it takes to realise a credential you started rotating was already dead or never real | Minutes for revoked, minutes for never-real, hours for an abandoned project. Timebox at 10–15 minutes then verify. Two critiques of what is worth automating. And a PKI answer showing live-versus-revoked is solved for certificates and unsolved for API keys | Not yet replied | Wasted-rotation cost bounded rather than swept; timeboxing recorded as a policy I do not have; the automation critique folded into limitations |
+| Reddit | r/devops | https://www.reddit.com/r/devops/comments/1vzk0v2/cost_of_rotating_a_revoked_key/ | Asked how long it takes to realise a credential you started rotating was already dead or never real | Seven replies. Minutes for revoked, minutes for never-real, hours for an abandoned project. Timebox at 10–15 minutes then verify. Two critiques of what is worth automating. A PKI answer showing live-versus-revoked is solved for certificates and unsolved for API keys. Then three more: why the hour happens, why one probe response cannot be trusted, and a rotation that silently did not take | Not yet replied | Wasted-rotation cost bounded rather than swept; timeboxing recorded as a policy I do not have; the automation critique folded into limitations; my by-product-observation assumption withdrawn; a fourth state added as open |
 
 ---
 
@@ -135,6 +135,36 @@ That is worth stating plainly in the preprint: **my central difficulty is a prop
 
 I am not adding any of this to the model. It is a different credential type with different mechanics, and my scope is one provider's API keys. But the reply is the clearest external evidence I have for *why* this problem is shaped the way it is, and it goes in the limitations section rather than being quietly dropped for being off-topic.
 
+### Three later replies, one of which contradicts something I had assumed
+
+**ForkMeJ** — where the hour goes:
+
+> An hour is very believable if the revoke path and the usage path live in different systems. The time sink is the generic "auth failed" error.
+
+**Alvasilev** — on refusing to collapse the failure, and on trusting a single response:
+
+> 401 means something is listening and did not get credentials it accepted [...] 403 means the credential authenticated fine and simply is not allowed to do that.
+
+> One response is an opinion.
+
+They work with a source that returns 410 on roughly half of identical requests, and said the habit that took them longest to learn was repeating the probe before concluding anything from it.
+
+**navlio** — a rotation that silently did not take:
+
+> we rotated it, the deploy went green, and the old value was still live because it had been baked in at image build time instead of read at startup. nothing was broken, so there was no signal telling us the rotation hadn't taken.
+
+Their fix was to have the app log a short fingerprint of whatever credential it loaded on boot, so rotation becomes something you confirm rather than infer.
+
+**What each one changes:**
+
+**navlio answers question 2, and withdraws an assumption of mine.** I had been telling myself that rotate-safely verifies itself — you confirm nothing is still calling the old key, so you learn the true state for free as a side effect of acting. navlio rotated, saw nothing break, and was wrong. Nothing breaking is not evidence the rotation took. So the undocumented consumer is not knowable before, and not reliably knowable after either, unless somebody instrumented for it first. That is the second person to tell me the answer is telemetry you have to set up in advance.
+
+**Alvasilev gives me a better fourth state than the one I guessed.** I wrote that I suspected a fourth case and could not characterise it. Theirs is characterisable: a key that authenticates fine and is allowed to do nothing — a 403 rather than a 401. My cost matrix charges 2400 to dismiss a live key because whatever sits behind it is reachable, and for this one nothing is. tudalex described the same thing from another direction, a key with no access left because the project died. I am recording it as an open state, not adding it — three states is what I can price.
+
+**Alvasilev also makes my probe more expensive, which strengthens a result rather than breaking it.** I priced `last_used_at` at ten minutes and treated the answer as a clean observation. If a response you can trust means calling two or three times, the real price is twenty or thirty. I had already worked out that the probe is worth at most about five minutes at any belief I can actually reach, so it was already not worth buying — this widens the gap. Useful because it comes from someone who has never seen my model.
+
+**ForkMeJ explains my cost split better than I did.** I priced finding consumers at 30 minutes documented and 480 undocumented. ForkMeJ says the predictor is whether the revoke path and the usage path live in different systems, and that the generic "auth failed" message is what burns the time — the same root cause Alvasilev names independently. That is a mechanism rather than a label, and it belongs in limitations.
+
 ## Questions queued to ask
 
 Written after settling on OpenAI, so these are in my current framing — three states, five actions — rather than the wording I used in my first post.
@@ -142,8 +172,8 @@ Written after settling on OpenAI, so these are in my current framing — three s
 | # | Question | Where I plan to ask | Why it matters |
 |---|---|---|---|
 | 1 | Revoke now, or find the consumers first and rotate cleanly? What decides it? | r/sysadmin, r/devops | **Prices two of my five actions.** Highest value question I have |
-| 2 | Is "the key had an undocumented consumer" knowable before you rotate, or only after it breaks? | r/sysadmin | If it is only visible afterwards it cannot be evidence, and I am not allowed to model it |
-| 3 | What is the state I am missing? | r/devsecops, r/AskNetsec | I can describe live, revoked and fake. I think there is a fourth and cannot characterise it |
+| 2 | ~~Is "the key had an undocumented consumer" knowable before you rotate, or only after it breaks?~~ | — | **Answered by navlio.** Neither — it takes telemetry set up beforehand. Not evidence my agent can use |
+| 3 | What is the state I am missing? | r/devsecops, r/AskNetsec | **Partly answered by Alvasilev.** A key that authenticates but is authorised for nothing — 403, not 401. Still worth asking, because I want to know whether anyone treats it as a separate case in practice |
 | 4 | When a scanner flags a key in your repo, what do you actually do first — the real procedure, not the ideal one | r/devsecops | Validates my baseline. I asked a version of this already but in older wording, so the answer addressed a different question |
 | 5 | If a triage tool handed back half its findings for a human to check, would you still run it? | r/devsecops | Sets the escalation rate above which the agent has not automated anything |
 

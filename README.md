@@ -61,7 +61,7 @@ The second half is the part I care about. A rule that wins under every assumptio
 | §7 discussion record | **Started** — two threads logged, both with design consequences |
 | §8 agent design | **Fully designed, nothing built** — all seven parts settled: input, hidden states, beliefs, actions, costs, policy, feedback. No code exists yet |
 | §9 experiment | Not started |
-| §10 probability decision record | Not started — template |
+| §10 probability decision record | **Done** — one finding worked end to end in `decisions/` |
 | §11 AI reviews | Not started — template |
 | §13 preprint | Not started |
 | §14 publication | Not started |
