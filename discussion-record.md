@@ -165,6 +165,37 @@ Their fix was to have the app log a short fingerprint of whatever credential it 
 
 **ForkMeJ explains my cost split better than I did.** I priced finding consumers at 30 minutes documented and 480 undocumented. ForkMeJ says the predictor is whether the revoke path and the usage path live in different systems, and that the generic "auth failed" message is what burns the time — the same root cause Alvasilev names independently. That is a mechanism rather than a label, and it belongs in limitations.
 
+### The reply that changed a result: my probe was ten times too expensive
+
+**navlio again**, later the same day:
+
+> the expensive part is rarely the rotation, it's not knowing which key was actually live. checking last-used on the credential first usually ends the argument in a minute, iam will tell you the service, region and date per access key
+
+> we lost most of a morning once rotating something that turned out to have never been called. the thing actually breaking prod was a second key nobody had written down anywhere
+
+They are describing my probe. I did not name it in the question, and they reached for it unprompted as the first thing you do — which is the strongest validation I have that the evidence I chose is the evidence people actually use.
+
+**But they priced it at a minute, and I had priced it at ten.**
+
+I guessed ten with nothing behind it. Combined with Alvasilev's warning never to trust a single response, the defensible number is one minute a call, three calls, **three minutes**. So I repriced it and re-ran every reachable belief.
+
+| Probe price | Investigate is bought at | Share of findings |
+|---|---|---|
+| 10 min (my guess) | nowhere | 0.00% |
+| 5 min | nowhere | 0.00% |
+| **3 min (sourced)** | **neutral / malformed** | **3.98%** |
+| 1 min | both malformed branches | 14.55% |
+
+**Investigate was never a dead action. My probe was overpriced by a factor of ten.** At three minutes the agent buys evidence on roughly one finding in twenty-five — the case where the string is malformed in a neutral context, which is exactly where I am closest to a boundary and least sure which side of it I am on. That is a policy I did not design; it fell out of a corrected number.
+
+Escalate is unaffected and still never chosen. That one loses for a structural reason — even a perfect oracle is worth less than a human's attention — and no price change reaches it.
+
+**Two things I am recording without modelling.**
+
+Their IAM returns the service, the region *and* the date for each key. OpenAI's `last_used_at` returns a timestamp and nothing else. Same probe, weaker signal, because of the provider I chose — that belongs in limitations.
+
+And what actually broke production was not the key they rotated. It was a second key nobody had written down. My agent takes one finding at a time and assumes the finding is the thing that matters. This is the second time navlio has described the same failure: the confirmation step told them everything was fine, and it was not.
+
 ## Questions queued to ask
 
 Written after settling on OpenAI, so these are in my current framing — three states, five actions — rather than the wording I used in my first post.

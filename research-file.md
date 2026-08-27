@@ -165,7 +165,7 @@ A key in a repository that has been private for years is unlikely to be found. A
 |---|---|
 | Revoke a key | 2 |
 | Issue a new key | 10 |
-| Run the probe | 10 |
+| Run the probe — three calls at about a minute each | 3 |
 | Human attention | 30 |
 | Find the consumers — documented | 30 |
 | Find the consumers — undocumented | 480 |
@@ -178,7 +178,7 @@ A key in a repository that has been private for years is unlikely to be found. A
 | | Live | Revoked | Fake |
 |---|---|---|---|
 | **Dismiss** | **2400** | 2 | 2 |
-| **Investigate** | 10 | 10 | 10 |
+| **Investigate** | 3 | 3 | 3 |
 | **Escalate** | 150 | 30 | 30 |
 | **Revoke now** | 330 | 2 | 5 |
 | **Rotate safely** | **120** | 30 | 20 |
@@ -190,6 +190,10 @@ The three cells that needed working out:
 - **Escalate on a live key = 150.** `30 human attention + 120 they rotate safely`. Escalation can never be cheaper than the action the human then takes; it is that action plus their attention.
 
 Dismissing a revoked or fake key is 2 rather than 0, because the finding comes back on the next scan and someone dismisses it again. Investigating costs the same in every column because the probe is paid for before I know which column I am in.
+
+**The probe was ten minutes until someone who uses it told me otherwise.** I had guessed ten with nothing behind it. A practitioner said checking last-used on a credential first *usually ends the argument in a minute*, and a second one said never to conclude anything from a single response — they work with a source that returns a different answer to half of its identical requests. One minute a call, three calls, three minutes. It is the only cell in this matrix sourced from two people rather than from me.
+
+**Investigate's row is not the same kind of number as the other four.** The other rows are what an action costs. This row is only the entry fee — investigate does not end anything, it buys an answer and then I decide again. If I dropped 3 into the argmin alongside the rest it would win at every belief and the agent would probe forever without ever acting. So four actions compete on expected cost, and investigate competes separately: buy it when what it is worth exceeds what it costs.
 
 **Sanity check.** If I knew a key was live, the ordering is rotate safely (120) < escalate (150) < revoke now (330) < dismiss (2400). That is what it should be: rotating is the right thing, escalating costs a little more because it spends a person, revoking now costs the outage, and dismissing costs the breach.
 
