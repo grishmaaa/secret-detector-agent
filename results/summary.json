@@ -1,12 +1,48 @@
 {
   "exact_expected_cost": {
-    "baseline": 87.6,
-    "P0": 70.7,
-    "P1": 185.20556,
-    "P2": 68.93545999999998,
-    "P3": 68.85905899999999
+    "baseline": 84.79999999999997,
+    "P0": 66.86000000000001,
+    "P1": 77.78941999999999,
+    "P1-trunc": 181.78411999999997,
+    "P2": 65.11465999999997,
+    "P3": 65.026739
   },
   "n_cases": 40,
   "seed": 20260827,
-  "probe_cost": 3
+  "probe_cost": 3,
+  "cost_matrix": {
+    "dismiss": {
+      "live": 2400,
+      "revoked": 2,
+      "fake": 2
+    },
+    "revoke": {
+      "live": 332,
+      "revoked": 2,
+      "fake": 5
+    },
+    "rotate": {
+      "live": 112,
+      "revoked": 30,
+      "fake": 20
+    },
+    "escalate": {
+      "live": 142,
+      "revoked": 32,
+      "fake": 32
+    }
+  },
+  "boundaries_reachable": [
+    {
+      "from": "dismiss",
+      "to": "revoke",
+      "p_live": 0.0014475
+    },
+    {
+      "from": "revoke",
+      "to": "rotate",
+      "p_live": 0.06588
+    }
+  ],
+  "max_vpi_reachable": 15.029999999999998
 }

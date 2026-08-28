@@ -1,10 +1,5 @@
 # Cost-Derived Triage of Secret-Scanner Findings When the Credential Cannot Be Verified
 
-*Draft preprint, IJCAI format. Single author. Written in the first person plural
-by convention; swap to "I" throughout if you prefer.*
-
----
-
 ## Abstract
 
 A secret scanner reports that a string in a repository looks like an API key. It
@@ -16,19 +11,23 @@ uncertainty: choose a remediation without ever learning the hidden state.
 We model the finding as one of three hidden states (live, revoked, fake), price
 five candidate actions in engineer-minutes, and select by minimising expected
 cost. No threshold is tuned; the decision boundaries fall out of the cost
-matrix. Against the baseline that teams actually run — escalate every finding to
-a human — the cost-derived policy saves 21.3% of engineer-minutes per finding
-while escalating nothing.
+matrix. Against an idealised escalate-everything baseline, the cost-derived
+policy saves 23.2% of modelled engineer-minutes per finding while escalating
+nothing. Every figure here is an expectation under our own cost model and
+likelihoods, not a measurement of real triage work.
 
 Three results were not designed in. First, the free evidence available inside a
 repository cannot distinguish a live key from a revoked one at all: both states
 carry identical likelihoods on every free feature, so their posterior ratio is
-invariant at 1.778 regardless of what is observed. Second, escalation is never
-optimal at any belief in the simplex — the value of a *perfect* oracle peaks at
-24.64 minutes against a human costing 30. Third, and least flattering to the
-method, a policy that observes *nothing at all* and acts on the prior already
-captures 19.3 of the 21.3 percentage points. The belief model is worth 1.76
-minutes per finding; the cost structure does the rest.
+invariant at 1.778 regardless of what is observed — which also confines the
+agent to a one-dimensional slice of the belief simplex, and every boundary we
+report is measured on that slice. Second, escalation is never optimal at any
+belief the agent can reach: a *perfect* oracle is worth at most 15.03 minutes
+there, so a human must cost less than that to be worth asking. Third, and least
+flattering to the method, a policy that observes *nothing at all* and acts on
+the prior already captures 21.2 of the 23.2 percentage points. The belief model
+is worth 1.75 minutes per finding and changes the chosen action on 14.55% of
+findings; the cost structure does the rest.
 
 We also report a case where practitioner feedback changed a result: our probe
 was priced at ten minutes by guesswork and at roughly one minute by people who
@@ -60,19 +59,22 @@ key. We keep it, and we treat it as the paper's most load-bearing assumption.
 **Contributions.**
 
 1. A decision-theoretic formulation of secret-scanner triage in which the
-   decision boundaries are *derived* from a cost matrix rather than tuned, and
-   we show the derived boundary sits at P(live) = 0.094 rather than near the
-   0.5 an engineer would pick by instinct.
+   decision boundaries are *derived* from a cost matrix rather than tuned. On
+   the slice of the simplex the agent can actually occupy, the derived boundary
+   sits at P(live) = 0.066 rather than near the 0.5 an engineer would pick by
+   instinct.
 2. A structural result: free repository evidence cannot separate live from
    revoked keys, because the two states are identically distributed on every
    observable feature. This is arithmetic, not an empirical claim.
-3. A negative result on escalation: it is not optimal at any belief in the
-   simplex, and the bound is on a perfect oracle rather than on a particular
-   human.
-4. An experiment showing that most of the improvement over the
+3. A parametric bound on escalation: a perfect oracle is worth at most 15.03
+   minutes at any reachable belief, so escalation is dominated for any human
+   costing more than that. This bounds a human who reveals the hidden state; it
+   says nothing about a human who supplies authority or context.
+4. A closed-world comparison showing that most of the improvement over the
    escalate-everything baseline comes from the cost structure rather than from
-   the belief model, and that the naive 0.5 threshold is not merely worse than
-   the baseline but unstable under a prior it is uncertain about.
+   the belief model, and that hand-picked thresholds, while not catastrophic
+   once given the full action set, respond non-monotonically to a prior we
+   cannot pin down.
 5. A documented instance of practitioner feedback correcting a model parameter
    by an order of magnitude and thereby changing which actions the agent takes.
 
@@ -127,8 +129,10 @@ distinguishable test keys, OpenAI does not. The trade was deliberate — we gave
 up a hidden state to gain a probe whose response shape is documented and
 quotable.
 
-Only the first state carries risk. The other two are harmless and differ only in
-why.
+Only the first state carries the exposure risk we price. The other two do not,
+though "harmless" would be too strong: a revoked key still has audit
+implications and may have been reused elsewhere. They differ from each other
+only in why they are inert.
 
 ### 3.2 Actions
 
@@ -233,14 +237,24 @@ Components: revoke 2 · issue a new key 10 · run the probe 3 · human attention
 |---|---|---|---|
 | Dismiss | **2400** | 2 | 2 |
 | Investigate | 3 | 3 | 3 |
-| Escalate | 150 | 30 | 30 |
-| Revoke now | 330 | 2 | 5 |
-| Rotate safely | **120** | 30 | 20 |
+| Escalate | 142 | 32 | 32 |
+| Revoke now | 332 | 2 | 5 |
+| Rotate safely | **112** | 30 | 20 |
 
-Worked cells: rotate-safely on live is $10 + 30 + 60 + 10 + 2$; revoke-now on
-live is the same hunt and the same deploy plus the outage, $2 + 240 + 30 + 60$;
-escalate on live is $30 + 120$, because escalation is never cheaper than the
-action the human then takes.
+The live column is component sums, exactly: rotate-safely is
+$10 + 30 + 60 + 10 + 2 = 112$; revoke-now is the same hunt and the same deploy
+plus the outage, $2 + 240 + 30 + 60 = 332$. Escalate is defined throughout as
+$30 + \min_a c(a, s)$ — human attention plus whatever that human then correctly
+does — giving 142 / 32 / 32. An earlier draft rounded these to 120, 330 and
+150/30/30 and the rounded values then disagreed with the component arithmetic
+elsewhere in the paper; the sums are now used everywhere.
+
+Three cells are direct estimates with no component decomposition: rotating a
+revoked key (30) or a fake one (20), and revoking a fake one (5). The
+rotate-on-fake figure is the cost of beginning a rotation and discovering there
+is nothing to rotate, and it matches the only practitioner estimate we have for
+that case ("never a real key? Minutes"). It is load-bearing: Section 7.6 shows
+that setting it to zero makes the belief model worth exactly nothing.
 
 The cost of dismissing a live key is itself a product — the chance someone finds
 and uses the key, times the damage if they do — and both factors vary with facts
@@ -272,15 +286,20 @@ No threshold appears in this expression. Thresholds are a consequence of it.
 
 ### 5.2 The derived regimes
 
-Solving for the boundaries gives three regions:
+With three states, $P(\text{live})$ alone does not determine the cheapest
+action — the split of the remaining mass between revoked and fake matters too.
+A boundary is therefore only meaningful relative to a path through the simplex,
+and Section 4.3 tells us which path: the free features lock
+$P(\text{live}) : P(\text{revoked})$ at 1.778, so the agent walks one line and
+never leaves it. All boundaries below are measured on that line.
 
 | $P(\text{live})$ | Cheapest action |
 |---|---|
-| below 0.00070 | Dismiss |
-| 0.00070 – 0.09386 | Revoke now |
-| above 0.09386 | Rotate safely |
+| below 0.00145 | Dismiss |
+| 0.00145 – 0.06588 | Revoke now |
+| above 0.06588 | Rotate safely |
 
-Two observations. **The boundary is at 0.094, not 0.5.** An engineer building
+Two observations. **The boundary is at 0.066, not 0.5.** An engineer building
 this by instinct places the line at "more likely than not" and dismisses
 findings this model rotates; Section 7 measures what that costs.
 
@@ -289,25 +308,33 @@ outages are not automatically acceptable; the arithmetic justifies it from a
 completely different direction, and a model with a single remediation action
 would never have exposed that region.
 
-### 5.3 Escalation is never optimal
+### 5.3 A bound on escalation
 
-Rather than test escalation at particular beliefs, we bound it. For every belief
-in the simplex we compute the value of perfect information — the cost saved by
-an oracle that reveals the true state. This is an upper bound on what *any*
-human could be worth, however skilled.
+Rather than test escalation at particular beliefs, we bound it. At each belief
+we compute the value of perfect information — the cost saved by an oracle that
+reveals the true state. This is an upper bound on what a human who *only
+resolves the hidden state* could be worth, however skilled.
 
-$$\max_{b \in \Delta} \mathrm{VPI}(b) = 24.64 \text{ minutes}$$
+Over the whole simplex the maximum is 24.78 minutes, but that maximiser lies at
+$b \approx (0.12, 0.88, 0.00)$, which the agent cannot reach. Over the six
+beliefs it can hold:
 
-against a human priced at 30. Even an infallible expert is not worth the
-interruption. Furthermore the maximiser lies at $b = (0.12, 0.88, 0)$, which our
-model cannot reach, because the free features lock the live-to-revoked ratio at
-1.778. Escalation loses twice.
+$$\max_{b \in \mathcal{B}_{\text{reachable}}} \mathrm{VPI}(b) = 15.03
+\text{ minutes}$$
+
+So escalation is dominated whenever a human costs more than 15.03 minutes. At
+our assumed 30 it loses comfortably; at the 10–15 minutes a dedicated triage
+analyst might cost, it does not, and the conclusion reverses. **This is a
+parametric result, not a structural one**, and it bounds only the informational
+value of a human. A person who supplies authority to act on another team's
+credential, or organisational context the model has no representation for, is
+not bounded by any VPI calculation.
 
 ### 5.4 Uncertainty is not the trigger
 
 It is natural to escalate when confused. We tested the most confused belief
 available, $(1/3, 1/3, 1/3)$ at 1.585 bits, the maximum entropy on three states.
-Rotate-safely costs 56.67; escalate costs 71.33.
+Rotate-safely costs 54.00; escalate costs 68.67.
 
 **Entropy measures confusion. It does not measure whether the confusion is
 expensive.** Two roads at a fork are maximally uncertain and the choice does not
@@ -322,14 +349,14 @@ exactly **six** posterior beliefs after free evidence. This is small enough to
 enumerate rather than sample, so the value of the probe is computed exactly at
 every belief the agent can hold.
 
-| Context | Form | $P(\text{seen})$ | $P(\text{live})$ | Act now | EVSI |
-|---|---|---|---|---|---|
-| placeholder | well-formed | .1442 | .3294 | rotate | 0.00 |
-| placeholder | malformed | .1057 | .0045 | revoke | 1.37 |
-| neutral | well-formed | .2477 | .5754 | rotate | 0.00 |
-| neutral | malformed | .0398 | .0362 | revoke | **4.92** |
-| production | well-formed | .4505 | .6329 | rotate | 0.00 |
-| production | malformed | .0120 | .2400 | rotate | 0.00 |
+| Context | Form | $P(\text{seen})$ | $P(\text{live})$ | Act now | EVSI | VPI |
+|---|---|---|---|---|---|---|
+| placeholder | well-formed | .1442 | .3294 | rotate | 0.00 | 13.92 |
+| placeholder | malformed | .1057 | .0045 | revoke | 1.40 | 3.98 |
+| neutral | well-formed | .2477 | .5754 | rotate | 0.00 | 10.88 |
+| neutral | malformed | .0398 | .0362 | revoke | **5.21** | 10.80 |
+| production | well-formed | .4505 | .6329 | rotate | 0.00 | 10.17 |
+| production | malformed | .0120 | .2400 | rotate | 0.00 | **15.03** |
 
 At the four beliefs where rotate-safely is already optimal, every probe outcome
 leaves it optimal, so the information is worth exactly nothing. Value
@@ -362,13 +389,18 @@ Five policies on identical findings:
 |---|---|
 | baseline | Escalate every finding |
 | P0 | Act on the prior; observe nothing |
-| P1 | Free evidence, then rotate if $P(\text{live}) > 0.5$, else dismiss |
+| P1 | Free evidence, then hand-picked thresholds (dismiss below 0.05, revoke below 0.5, else rotate) over all four terminal actions |
+| P1-trunc | Free evidence, then rotate if $P(\text{live}) > 0.5$, else dismiss |
 | P2 | Free evidence, then minimise expected cost |
 | P3 | P2, plus buy the probe when EVSI exceeds its price |
 
-P1 is the comparison that matters: it is the policy a competent engineer writes
-on the first afternoon. P0 is the control we nearly omitted and which turned out
-to be the most informative row.
+P1 is the comparison that matters: hand-picked thresholds, but otherwise the
+same information and the same actions available to P2, so the comparison
+isolates *where the boundaries came from* and nothing else. P1-trunc is an
+earlier version of that comparison which also restricted the action set to two;
+we report it because it produces a dramatic result for the wrong reason, and
+Section 7.3 separates the two effects. P0 is the control we nearly omitted and
+which turned out to be the most informative row.
 
 Two numbers are reported for each policy. **Expected cost** is computed in
 closed form over all 54 possible worlds (3 states × 3 contexts × 2 forms × 3
@@ -381,25 +413,35 @@ report both rather than allow either to stand alone.
 
 ### 7.1 Main comparison
 
-| | Policy | Expected cost | vs baseline | Escalates | Probes |
-|---|---|---|---|---|---|
-| baseline | escalate everything | 87.60 | — | 100% | 0% |
-| P0 | prior only | 70.70 | −19.3% | 0% | 0% |
-| P1 | threshold 0.5 | 185.21 | **+111.4%** | 0% | 0% |
-| P2 | cost-derived | 68.94 | **−21.3%** | 0% | 0% |
-| P3 | P2 + probe | 68.86 | −21.4% | 0% | 4.0% |
+| | Policy | Expected cost | vs baseline | Escalates | Probes | Differs from P0 |
+|---|---|---|---|---|---|---|
+| baseline | escalate everything | 84.80 | — | 100% | 0% | — |
+| P0 | prior only | 66.86 | −21.2% | 0% | 0% | — |
+| P1 | hand-picked, 4 actions | 77.79 | −8.3% | 0% | 0% | 14.55% |
+| P1-trunc | hand-picked, 2 actions | 181.78 | **+114.4%** | 0% | 0% | 14.55% |
+| P2 | cost-derived | 65.11 | **−23.2%** | 0% | 0% | **14.55%** |
+| P3 | P2 + probe | 65.03 | −23.3% | 0% | 4.0% | 10.57% |
 
-On the 40 frozen cases: baseline 2880 minutes, P2 2130, a 26.0% saving.
+The last column is the share of findings on which the policy chooses a different
+action from P0's constant "rotate safely". It is the honest measure of how much
+the belief model does.
+
+On the 40 frozen cases: baseline 2820 minutes, P2 2018, a 28.4% saving. That
+draw contains 14 live keys out of 40, a live share of 0.35 against a prior of
+0.48 — 1.6 standard deviations low — so the sampled figure is not
+interchangeable with the exact one.
 
 ### 7.2 The cost structure does the work, not the evidence
 
 P0 observes nothing whatsoever. It knows the base rates, concludes that
 rotate-safely is cheapest in expectation, and applies it to every finding. It
-beats the baseline by 19.3%.
+beats the baseline by 21.2%.
 
-The full belief model reaches 21.3%. **The evidence is worth 1.76 minutes per
-finding, and the remaining 19 points come from a single decision: stop asking a
-human.**
+The full belief model reaches 23.2%. **The evidence is worth 1.75 minutes per
+finding, and the remaining 21 points come from a single decision: stop asking a
+human.** The belief model does change the action on 14.55% of findings — it is
+not inert — but the action it changes to is cheap enough that the aggregate
+difference is small.
 
 We report this as the paper's least flattering result and its most important
 one. The mechanism is that rotate-safely costs 120 / 30 / 20 — it is nearly
@@ -407,34 +449,58 @@ state-blind, and tolerable whichever state obtains. When a hedge that good is
 available, identifying the state buys very little. This is the same principle as
 the EVSI result, one level up: information is worth what it changes.
 
-### 7.3 The naive threshold is worse than the baseline, and unstable
+### 7.3 What hand-picked thresholds actually cost
 
-P1 costs more than twice the baseline. The cause is the gap between 0.5 and the
-derived 0.094: everything in between is dismissed rather than rotated, and
-dismissing a live key costs 2400. On the sample, one case accounts for 2400 of
-P1's 4292 minutes.
+An earlier version of this comparison reported that the naive 0.5 threshold
+costs more than twice the baseline, and treated that as the paper's strongest
+argument for deriving boundaries. **That comparison was confounded**, and we
+report the correction rather than the original claim.
 
-Worse is what happens under a prior we are not confident in. Sweeping the
-proportion of non-fake keys that are live:
+P1-trunc changes two things at once: it moves the boundary to 0.5 *and* it
+restricts the action set to {rotate, dismiss}, withholding revoke-now — which
+Section 5.2 shows owns a regime of its own. Holding the threshold fixed at 0.5
+and varying only the fallback separates the two effects:
+
+| Threshold 0.5, fallback | Expected cost | vs baseline |
+|---|---|---|
+| dismiss | 181.78 | +114.4% |
+| escalate | 71.13 | −16.1% |
+| revoke now | 74.25 | −12.4% |
+| rotate safely | 66.86 | −21.2% |
+
+**The catastrophe is caused by dismissing, not by thresholding.** The same 0.5
+boundary with a safe fallback beats the baseline. Given the full four actions
+and a second hand-picked cut at 0.05, P1 costs 77.79 — 8.3% better than the
+baseline, and 19.5% worse than P2. That is the honest size of the effect.
+
+What does survive is a difference in how the two policies respond to a prior we
+cannot pin down:
 
 | live share | baseline | P0 | P1 | P2 |
 |---|---|---|---|---|
-| 0.40 | 66.0 | 54.5 | **721.4** | 52.6 |
-| 0.50 | 75.0 | 61.3 | **901.2** | 59.4 |
-| 0.64 | 87.6 | 70.7 | 185.2 | 68.9 |
-| 0.80 | 102.0 | 81.5 | 226.2 | 79.8 |
+| 0.40 | 65.0 | 52.1 | **103.8** | 50.2 |
+| 0.50 | 73.2 | 58.3 | **129.2** | 56.4 |
+| 0.64 | 84.8 | 66.9 | 77.8 | 65.1 |
+| 0.70 | 89.8 | 70.5 | 83.1 | 68.8 |
+| 0.80 | 98.0 | 76.7 | 91.9 | 75.1 |
 
-P1 moves by a factor of five and non-monotonically, because a modest shift in
-the prior flips the largest bucket of findings from rotate to dismiss. P2 moves
-smoothly and in the expected direction. **A threshold read off the cost matrix
-cannot fall off this cliff, because it moves when the costs move.** This is the
-strongest argument we have for deriving rather than tuning.
+P1 is **non-monotonic**: it gets more expensive as the world gets safer, and at
+a live share of 0.40 it costs 60% *more* than the baseline it beat at 0.64.
+P2 falls smoothly from 75.1 to 50.2 across the same range. So a hand-picked
+threshold is not catastrophic, but its sign relative to the baseline depends on
+a quantity we do not know — **a fixed boundary cannot track a moving prior,
+whereas one read off the cost matrix moves when the costs move.** That is a
+weaker claim than the paper originally made and it is the one the numbers
+support.
 
-### 7.4 Evidence is worthless when one action dominates
+### 7.4 Evidence is worthless when one action wins everywhere
 
-Priced at zero outage, revoke-now is cheapest in every state, and P0 and P2 cost
-*exactly* 46.0 — identical to two decimal places. Reading the features changes
-nothing, because nothing they could say would change the action.
+Priced at zero outage, revoke-now is optimal at every belief the agent can
+reach, and P0 and P2 then cost *exactly* 46.0 — identical to two decimal places.
+Reading the features changes nothing, because nothing they could say would
+change the action. (Revoke-now is not cheaper than every alternative in every
+*state* — dismiss is cheaper on fake — but it wins at every reachable belief,
+which is what matters.)
 
 ### 7.5 Information concentrates at decision boundaries
 
@@ -449,9 +515,34 @@ documented/undocumented split is the largest uncertainty in the cost model — h
 no value for choosing between the remediation actions. The consumer hunt appears
 identically in both: $c(\text{rotate}, \text{live}) = 82 + F$ and
 $c(\text{revoke}, \text{live}) = 302 + F$, so their difference is 220 for every
-$F$, and the boundary sits at 0.06588 for $F \in \{30, 60, 120, 240, 480\}$.
+$F$, and the boundary sits at 0.06588 for $F \in \{30, 60, 120, 240, 480\}$ —
+the same value Section 5.2 reports, because it is the same line.
 **Information that changes what you pay, but not the ordering of what you might
 do, is worth nothing.**
+
+The same invariance disposes of a related worry. Scaling the cost of dismissing
+a live key from 2 400 to 120 000 minutes leaves the revoke/rotate boundary at
+0.06588 throughout, because that component appears in neither action; only the
+dismiss boundary moves, from 0.00145 to 0.00003, and no reachable belief is near
+it.
+
+### 7.6 The belief model's value lives in one cost cell
+
+Rotating a *fake* key is priced at 20 minutes — the cost of starting a rotation
+and discovering there is nothing to rotate. Varying it:
+
+| $c(\text{rotate}, \text{fake})$ | P0 | P2 | P2 differs from P0 on |
+|---|---|---|---|
+| 0 | 61.86 | 61.86 | 0.00% |
+| 10 | 64.36 | 63.86 | 14.55% |
+| 20 | 66.86 | 65.11 | 14.55% |
+| 60 | 76.86 | 68.79 | 14.55% |
+| 120 | 84.80 | 70.62 | 15.83% |
+
+At zero the two policies are **identical**, and the belief model is worth
+nothing at all. Every result in Section 7.2 therefore rests on a single
+estimated cell, and we would rather state that than let the 1.75-minute figure
+stand unqualified.
 
 ## 8 Discussion
 
@@ -461,18 +552,23 @@ optimal; the probe is usually not worth buying. Each was established by
 computation rather than assertion, and each was contrary to the authors'
 expectation before it was computed.
 
-The most useful methodological observation is that **deriving quantities is
-worth more than choosing them, mostly because it changes what an objection looks
-like.** A tuned threshold can only be defended by authority. A derived one can
-only be attacked through a cost, which is a claim a practitioner can correct —
-and one did, by an order of magnitude, changing which actions the agent takes.
+The methodological observation we would defend is narrower than the one an
+earlier draft made. Deriving a boundary rather than choosing it does not make
+the policy dramatically cheaper — Section 7.3 shows a hand-picked threshold with
+a sensible fallback beats the baseline too. What it changes is **what an
+objection looks like**. A tuned threshold can only be defended by authority; a
+derived one can only be attacked through a cost, which is a claim a practitioner
+can correct. One did, by an order of magnitude, and the correction changed which
+actions the agent takes. And a derived boundary moves when the world moves,
+which is why P2 responds monotonically to the prior where P1 does not.
 
-The result we would most like to see contradicted is Section 7.2. If the
-belief model is worth 1.76 minutes, then most of what makes this agent useful
-is the decision to stop escalating, which requires no probabilistic machinery at
-all. That would be a real finding about the domain rather than a failure of the
-method — but it rests on rotate-safely being cheap in every state, which is
-three numbers we estimated.
+The result we would most like to see contradicted is Section 7.2. If the belief
+model is worth 1.75 minutes, then most of what makes this agent useful is the
+decision to stop escalating, which requires no probabilistic machinery at all.
+That would be a real finding about the domain rather than a failure of the
+method. But Section 7.6 shows it rests on a single estimated cell — the cost of
+rotating a fake key — and at zero that cell makes the belief model worth
+precisely nothing. The finding and its weakest input are the same input.
 
 ## 9 Limitations
 
@@ -510,6 +606,34 @@ cost 2400.
 contains no credential material; every string in it is a synthetic feature
 descriptor.
 
+**Conditional independence is assumed and unstated in the model.** The posterior
+multiplies the feature likelihoods, so Section 4.3's invariance follows from
+identical *marginals* plus independence. Identical marginals alone would not
+give identical joints. We believe the joint claim — a repository does not reveal
+whether a key still authenticates — but it is a claim, not a derivation.
+
+**The free feature set is not the whole repository.** Two features we did not
+model would plausibly separate live from revoked: repository visibility (OpenAI
+is a partner in GitHub's programme, so leaks in public repositories are reported
+to the provider and may be revoked without us) and commit semantics (a deletion
+commit reading "remove leaked key" is strong evidence of revocation). **Section
+4.3's invariance is a property of the two static text features we chose, not of
+repository evidence in general**, and it is safest read as a private-repository
+claim.
+
+**The probe requires a privileged credential.** Reading `last_used_at` means the
+scanning pipeline holds an organisation-wide admin key in order to triage a
+single project key. That is a high-severity credential introduced to resolve a
+low-severity finding, and the model prices the probe's minutes without pricing
+that asymmetry.
+
+**Boundaries are slice-dependent, and an earlier draft reported them from the
+wrong slice.** With three states a boundary is defined relative to a path
+through the simplex. The free features confine the agent to one line; figures
+computed on the prior-ratio slice (0.09386 for the revoke/rotate boundary, 24.64
+minutes for the VPI bound) describe beliefs the agent cannot hold. The
+corresponding reachable figures are 0.06588 and 15.03.
+
 ## 10 Conclusion
 
 We formulated secret-scanner triage as a decision under uncertainty in which the
@@ -517,9 +641,9 @@ hidden state cannot be observed without doing something we are unwilling to do,
 and showed that the decision is nonetheless tractable because the *costs* are
 knowable even when the state is not.
 
-The policy saves 21.3% of engineer-minutes against escalate-everything while
-never escalating. But the honest headline is smaller and more interesting: a
-policy observing nothing at all captures 19.3 of those points. In this domain, a
+The policy saves 23.2% of modelled engineer-minutes against escalate-everything
+while never escalating. But the honest headline is smaller and more interesting:
+a policy observing nothing at all captures 21.2 of those points. In this domain, a
 safe action that is cheap in every state does most of the work that a belief
 model appears to be doing — and the contribution of decision theory here is less
 the posterior than the discipline of pricing the actions before choosing between
