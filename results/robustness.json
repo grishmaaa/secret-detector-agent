@@ -1,0 +1,90 @@
+{
+  "n_samples": 40000,
+  "seed": 20260828,
+  "alpha": 40,
+  "ranges": {
+    "revoke": {
+      "low": 1,
+      "most_likely": 2,
+      "high": 5
+    },
+    "issue": {
+      "low": 1,
+      "most_likely": 10,
+      "high": 25
+    },
+    "probe": {
+      "low": 0.5,
+      "most_likely": 3,
+      "high": 10
+    },
+    "human": {
+      "low": 5,
+      "most_likely": 30,
+      "high": 60
+    },
+    "find": {
+      "low": 10,
+      "most_likely": 30,
+      "high": 120
+    },
+    "deploy": {
+      "low": 10,
+      "most_likely": 60,
+      "high": 180
+    },
+    "verify": {
+      "low": 2,
+      "most_likely": 10,
+      "high": 30
+    },
+    "outage": {
+      "low": 30,
+      "most_likely": 240,
+      "high": 480
+    },
+    "dismiss_live": {
+      "low": 240,
+      "most_likely": 2400,
+      "high": 24000
+    },
+    "rotate_revoked": {
+      "low": 5,
+      "most_likely": 30,
+      "high": 90
+    },
+    "rotate_fake": {
+      "low": 1,
+      "most_likely": 20,
+      "high": 60
+    },
+    "revoke_fake": {
+      "low": 1,
+      "most_likely": 5,
+      "high": 20
+    },
+    "dismiss_inert": {
+      "low": 1,
+      "most_likely": 2,
+      "high": 5
+    }
+  },
+  "costs_only_pct": {
+    "P2 costs less than escalate-everything": 98.02,
+    "revoke/rotate boundary below 0.5": 93.26,
+    "belief model worth under 5 min/finding": 91.34,
+    "P0 also costs less than the baseline": 79.2,
+    "escalate is chosen nowhere": 70.29,
+    "the probe is bought somewhere": 59.29,
+    "P0 chooses rotate-safely": 66.37
+  },
+  "costs_and_evidence_pct": {
+    "P2 costs less than escalate-everything": 98.64,
+    "revoke/rotate boundary below 0.5": 93.24,
+    "belief model worth under 5 min/finding": 88.13,
+    "P0 also costs less than the baseline": 79.2,
+    "escalate is chosen nowhere": 69.75,
+    "the probe is bought somewhere": 57.98,
+    "P0 chooses rotate-safely": 66.56
+  }
+}

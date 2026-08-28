@@ -5,8 +5,11 @@
 A secret scanner reports that a string in a repository looks like an API key. It
 does not say whether the key works. The obvious way to find out — calling the
 provider with the key — means authenticating with a credential belonging to
-someone else, and we rule it out. This leaves a decision under genuine
-uncertainty: choose a remediation without ever learning the hidden state.
+someone else, and we rule it out. **This paper studies triage in the
+no-direct-verification setting**: the hidden state is not merely unknown, it is
+one we have decided not to resolve by the available means. That is a deliberate
+scope restriction rather than a property of the domain, and every result below
+is conditional on it.
 
 We model the finding as one of three hidden states (live, revoked, fake), price
 five candidate actions in engineer-minutes, and select by minimising expected
@@ -21,18 +24,21 @@ repository cannot distinguish a live key from a revoked one at all: both states
 carry identical likelihoods on every free feature, so their posterior ratio is
 invariant at 1.778 regardless of what is observed — which also confines the
 agent to a one-dimensional slice of the belief simplex, and every boundary we
-report is measured on that slice. Second, escalation is never optimal at any
-belief the agent can reach: a *perfect* oracle is worth at most 15.03 minutes
-there, so a human must cost less than that to be worth asking. Third, and least
+report is measured on that slice. Second, escalation *as a way of resolving the
+hidden state* is never cost-optimal at any belief the agent can reach: a
+perfect oracle is worth at most 15.03 minutes there, so a human must cost less
+than that to be worth asking on informational grounds alone. Third, and least
 flattering to the method, a policy that observes *nothing at all* and acts on
 the prior already captures 21.2 of the 23.2 percentage points. The belief model
 is worth 1.75 minutes per finding and changes the chosen action on 14.55% of
 findings; the cost structure does the rest.
 
 We also report a case where practitioner feedback changed a result: our probe
-was priced at ten minutes by guesswork and at roughly one minute by people who
-use it, and the correction moved the investigate action from never selected to
-selected on 3.98% of findings.
+was priced at ten minutes by guesswork, and a practitioner who uses it offered a
+materially different estimate of roughly one minute. Adopting that estimate moved
+the investigate action from never selected to selected on 3.98% of findings. We
+treat this as sensitivity evidence — one plausible alternative value — rather
+than as a measurement of the true cost.
 
 ---
 
@@ -63,13 +69,17 @@ key. We keep it, and we treat it as the paper's most load-bearing assumption.
    the slice of the simplex the agent can actually occupy, the derived boundary
    sits at P(live) = 0.066 rather than near the 0.5 an engineer would pick by
    instinct.
-2. A structural result: free repository evidence cannot separate live from
-   revoked keys, because the two states are identically distributed on every
-   observable feature. This is arithmetic, not an empirical claim.
+2. A structural result: the two free features we model cannot separate live from
+   revoked keys, because both states carry identical likelihoods on each of
+   them. Given conditional independence this is arithmetic rather than an
+   empirical claim — and it is a property of the features chosen, not of
+   repository evidence in general.
 3. A parametric bound on escalation: a perfect oracle is worth at most 15.03
-   minutes at any reachable belief, so escalation is dominated for any human
-   costing more than that. This bounds a human who reveals the hidden state; it
-   says nothing about a human who supplies authority or context.
+   minutes at any reachable belief, so escalation cannot be justified on
+   information-gathering grounds whenever human triage overhead exceeds that.
+   This bounds a human acting as a state oracle; it says nothing about a human
+   who supplies authority, ownership or organisational context, none of which
+   any VPI calculation can bound.
 4. A closed-world comparison showing that most of the improvement over the
    escalate-everything baseline comes from the cost structure rather than from
    the belief model, and that hand-picked thresholds, while not catastrophic
@@ -153,10 +163,17 @@ second time in Section 5.2, from an argument we did not anticipate.
 
 ### 3.3 Baseline and objective
 
-The baseline is what teams do today: escalate every finding to a person, who
-resolves it correctly. **The baseline is never wrong about the hidden state.**
-There is therefore no accuracy for an automated method to win, and reporting an
-accuracy figure would be close to meaningless. The only remaining axis is cost.
+Our baseline is an **idealised escalate-everything policy**: every finding goes
+to a person, and that person resolves it correctly. We do not claim this is what
+teams do today — real pipelines allowlist known fixtures, auto-dismiss, and route
+by pattern before any human sees an alert, and we have no citation for the
+prevalence of any particular procedure. It is a deliberately favourable
+comparator, chosen because it makes the argument of this section clean: **the
+baseline is never wrong about the hidden state.** There is therefore no accuracy
+for an automated method to win, and reporting an accuracy figure would be close
+to meaningless. The only remaining axis is cost. A baseline with a fallible human
+and a realistic escalation rate would be a harder and more informative
+comparison, and we do not attempt it.
 
 > **Objective.** Does a probabilistic, cost-aware policy reach the same
 > decisions as escalate-everything while spending fewer human interruptions —
@@ -169,7 +186,8 @@ assumption we could vary would be evidence that the comparison was built badly.
 
 ### 4.1 Prior
 
-We derive rather than assert the prior. GitHub's scanner reports about 75%
+We **construct** a traceable prior from two external estimates rather than
+estimating one from representative data. GitHub's scanner reports about 75%
 precision, so roughly three-quarters of findings are real credentials. Of those,
 about 64% are still valid. This gives
 
@@ -178,7 +196,12 @@ $$P(\text{live}) = 0.75 \times 0.64 = 0.48,\quad
   P(\text{fake}) = 0.25.$$
 
 Its virtue is not accuracy but traceability: each factor points at a source that
-can be disputed.
+can be disputed. Two caveats belong here rather than in the limitations. The 64%
+describes credentials known valid in 2022 and still valid in 2026, which is not
+the same population as findings a scanner reports today; and detector precision
+counts strings that are not credentials at all, whereas our *fake* state is
+defined as a real-format string that never authenticated. We merge those two
+populations into one state and its likelihood row is a guess for both.
 
 ### 4.2 Evidence
 
@@ -195,6 +218,16 @@ provider's published format.
 account about the key through the provider's admin API. This is the only
 evidence that reaches outside the repository, and it never involves
 authenticating *as* the suspect key.
+
+**Conditional independence.** We assume the features are conditionally
+independent given the hidden state, so that
+$P(c, f, r \mid s) = P(c \mid s)\,P(f \mid s)\,P(r \mid s)$. This is what
+licenses the multiplication in every posterior below, and it is what makes
+Section 4.3's result follow from the rows of the table rather than from a joint
+distribution we never specify. It is an assumption of convenience and it is
+plainly imperfect: a string that reads as a placeholder from its path and
+variable name is more likely to be malformed than the product suggests. We flag
+it here because Section 4.3's structural claim depends on it.
 
 $P(e \mid s)$:
 
@@ -219,10 +252,16 @@ On our worked case the posterior is 0.6329 / 0.3560 / 0.0111, and 0.6329 /
 0.3560 = 1.778 to four decimal places. The free evidence does one job
 excellently — it collapses *fake* from 0.25 to 0.011 — and the other not at all.
 
-**No amount of free evidence can move the ratio that matters.** This is the
-result the rest of the paper turns on, and it is visible only because we kept
-live and revoked as separate states where most treatments collapse them into
-"true positive".
+**Neither of these two features can move the ratio that matters**, at any value,
+in any combination. That is the result the rest of the paper turns on, and it is
+visible only because we kept live and revoked as separate states where most
+treatments collapse them into "true positive".
+
+We state it narrowly on purpose. This is a property of the two static text
+features we chose, not of repository evidence in general. Section 9 names two we
+did not model — repository visibility and commit semantics — that would
+plausibly separate the two states, and the claim is safest read as applying to
+findings in private repositories where neither is informative.
 
 ### 4.4 Costs
 
@@ -370,18 +409,36 @@ against concluding anything from a single response, having worked with a source
 that answers half of its identical requests differently. One minute per call,
 three calls, gives three minutes.
 
-| Probe price | Bought at | Share of findings |
-|---|---|---|
-| 10 (our guess) | nowhere | 0.00% |
-| 5 | nowhere | 0.00% |
-| **3 (sourced)** | neutral / malformed | **3.98%** |
-| 1 | both malformed branches | 14.55% |
+Because EVSI takes only **two** non-zero values across the reachable set —
+1.4012 and 5.2118 — the probe's price does not tune behaviour continuously. It
+selects one of exactly three regimes:
 
-The correction moved investigate from never selected to selected on roughly one
-finding in twenty-five — a behaviour we did not design and that follows from a
-single corrected parameter.
+| Probe price | Bought at | Share of findings | P3 gain over P2 |
+|---|---|---|---|
+| below 1.40 | both malformed buckets | 14.55% | up to 0.30 min |
+| **1.40 – 5.21** | neutral / malformed only | **3.98%** | 0.01 – 0.15 min |
+| above 5.21 | nowhere | 0.00% | 0.00 |
 
-## 6 Experimental Setup
+Evaluated at specific prices:
+
+| Price | 0.5 | 1 | 1.5 | 2 | **3** | 5 | 10 |
+|---|---|---|---|---|---|---|---|
+| Findings probed | 14.55% | 14.55% | 3.98% | 3.98% | **3.98%** | 3.98% | 0% |
+| Saving, min/finding | 0.283 | 0.210 | 0.148 | 0.128 | **0.088** | 0.008 | 0.000 |
+
+Two things follow. **Investigation becomes rational at 5.21 minutes** — that is
+the price below which some belief justifies buying evidence, and it is a
+property of the cost matrix rather than of the probe. Our earlier estimate of
+ten minutes sat above it, which is why the action appeared dead.
+
+And **it never becomes important.** Even at half a minute — a probe that is
+effectively free — the aggregate saving is 0.283 minutes per finding, four
+tenths of one percent of P2's cost. The correction moved investigate from never
+selected to selected on one finding in twenty-five, a behaviour we did not
+design; it did not move the total. Information here is sometimes worth buying
+and never worth much, and those are separate facts.
+
+## 6 Simulation Study
 
 Five policies on identical findings:
 
@@ -409,7 +466,42 @@ probe outcomes) and carries no sampling error. **Realised cost** is measured on
 that a single dismissed live key moves the total by more than half, and we
 report both rather than allow either to stand alone.
 
-## 7 Results
+### 6.1 Why the study is a simulation rather than an experiment
+
+The obvious alternative is SecretBench [Basak et al., 2023b], a labelled corpus
+of 97,479 candidate secrets drawn from public repositories, 15,084 of them
+confirmed real. We list it in related work and do not use it, and the reason is
+specific rather than convenient.
+
+**SecretBench labels whether a string is a secret. It does not label whether
+that secret still works.** Its fields include `label` (true or false),
+`is_template`, `entropy`, `character_set`, `length` and `file_path` — enough to
+ground our *fake* state, the 0.25 of prior mass assigned to it, and both free
+feature rows, since `is_template` is close to our placeholder context and the
+entropy and character-set fields are what our well-formedness feature encodes.
+There is no field for live versus revoked.
+
+That is the axis this paper turns on. Fitting the free features to real data
+would sharpen the half of the model that already works — the collapse of *fake*
+from 0.25 to 0.011 — and leave the half that matters exactly where it is. It
+would improve the numbers we are least worried about.
+
+We therefore record the gap as evidence rather than as an obstacle. **The
+largest public corpus of real leaked credentials does not record whether they
+still authenticate**, and the reason is the one that motivates this paper:
+establishing it would mean testing each key against its provider. The label is
+missing from the dataset for precisely the reason the state is hidden from our
+agent, which is the strongest external support we have for the problem being
+real. Access is also non-trivial — the corpus is released under a signed data
+protection agreement and hosted on Google Cloud — but that is a scheduling cost
+and not the reason.
+
+Grounding the free-feature likelihoods against SecretBench remains the single
+most valuable extension we can name. It would raise the credibility of the prior
+and of Section 4.3's *fake* collapse. It cannot validate the live/revoked
+invariance, and no public dataset we are aware of can.
+
+## 7 Simulation Results
 
 ### 7.1 Main comparison
 
@@ -543,6 +635,100 @@ At zero the two policies are **identical**, and the belief model is worth
 nothing at all. Every result in Section 7.2 therefore rests on a single
 estimated cell, and we would rather state that than let the 1.75-minute figure
 stand unqualified.
+
+### 7.7 Where the policy loses, and what it never does
+
+Defining an incorrect decision as one a hindsight-perfect agent would have made
+differently, and its size as the regret
+$c(a, s) - \min_{a'} c(a', s)$, P2 pays 2 018 minutes on the forty frozen cases
+against a hindsight-optimal 1 620. **Total regret 398 minutes, 19.7%** — the
+price of not knowing the state.
+
+The five costliest errors turn out to be the *same* error five times: a
+well-formed key in a real-looking file, rotated, and already revoked. 28 minutes
+of wasted remediation each. The agent has no idiosyncratic failures on this
+sample, only one systematic bias applied consistently — and the bias is the
+invariant ratio of Section 4.3 arriving as a bill. Those five decisions were
+correct given the information and wrong given the world.
+
+| Chose | On a key that was | Cases | Regret |
+|---|---|---|---|
+| rotate safely | revoked | 11 | 308 |
+| rotate safely | fake | 3 | 54 |
+| revoke now | fake | 12 | 36 |
+| *(correct)* | — | 14 | 0 |
+
+**Every error is over-remediation. Not one case in forty under-reacts.** The two
+expensive errors available — dismissing a live key (regret 2 288) and revoking
+one (220) — did not occur. The first cannot: P2 never dismisses at a reachable
+belief. The second can, and roughly two were expected on this draw; zero
+occurred, which is a sampling accident rather than a property.
+
+This profile is the cost matrix behaving as designed. A 100:1 ratio between
+dismissing a live key and rotating an inert one buys exactly this: 398 minutes
+of unnecessary work to never risk the expensive mistake. Full analysis in
+`results/error-analysis.md`.
+
+### 7.8 Joint sensitivity: what survives when the model is wrong at once
+
+Every sweep above varies one component and holds twelve fixed, which flatters
+the model. We therefore sampled the whole specification jointly — 40 000 draws,
+each quantity from a two-piece lognormal whose most-likely value is the median
+and whose stated low and high are the 5th and 95th percentiles — and ran it
+twice: once with the evidence model fixed, and once with every likelihood row
+also perturbed (Dirichlet, α = 40), the live and revoked rows independently, so
+that the identical-rows property behind Section 4.3 is deliberately broken.
+
+| Claim | costs uncertain | costs *and* evidence uncertain |
+|---|---|---|
+| P2 costs less than escalate-everything | **98.02%** | **98.64%** |
+| Revoke/rotate boundary below 0.5 | **93.26%** | **93.24%** |
+| Belief model worth under 5 min per finding | **91.34%** | 88.13% |
+| P0 also costs less than the baseline | 79.20% | 79.20% |
+| **Escalate is chosen nowhere** | **70.29%** | 69.75% |
+| The probe is bought somewhere | 59.29% | 57.98% |
+
+These are shares of sampled draws, not confidence levels, and components are
+drawn independently — an assumption that is certainly false, since a deployment
+that is hard to run is probably also hard to verify.
+
+**Perturbing the evidence model breaks the invariance and changes almost
+nothing.** The live-to-revoked log-ratio drift across buckets rises from exactly
+0.000 to a median of 2.53 — a factor of roughly twelve, meaning the free
+features do separate the two states in most of those worlds — and no conclusion
+moves by more than 3.2 percentage points. Section 4.3's invariance is an
+idealisation, and the conclusions that appear to rest on it do not need it:
+rotate-safely stays cheap in every state either way.
+
+**Escalation, tested rather than observed.** Holding every other component at
+its point estimate and varying only the cost of human attention:
+
+| Human attention | Findings escalated |
+|---|---|
+| ≤ 3 min | **100.00%** |
+| 5 – 10 min | 89.42% |
+| 12 min | 15.62% |
+| 15 min | 1.20% |
+| ≥ 20 min | **0.00%** |
+
+Escalation goes from every finding to none across a twenty-minute range, with
+the crossover between 12 and 20 minutes. **Section 5.3's result is a
+consequence of pricing human attention at 30 minutes**, not of the structure of
+the problem, and we withdraw any reading of it as structural.
+
+| Quantity | 5th | Median | 95th | Point estimate |
+|---|---|---|---|---|
+| P2 saving vs baseline | 0.53% | 19.23% | 51.27% | 23.2% |
+| Value of the belief model (min) | 0.00 | 0.87 | 6.31 | 1.75 |
+| Revoke/rotate boundary | −0.136 | 0.059 | 0.600 | 0.0659 |
+| Max VPI, reachable beliefs | 1.37 | 12.12 | 32.12 | 15.03 |
+
+Every point estimate sits near its median, so our cost model is not an outlier
+among plausible ones; the intervals are nonetheless very wide. **The claims
+worth keeping are about ordering rather than magnitude** — the boundary is far
+below 0.5, the belief model is worth little, and cost-derived selection beats
+escalate-everything. "23.2%", "1.75 minutes" and "never escalates" do not
+survive as stated. Full analysis in `results/robustness.md`.
 
 ## 8 Discussion
 
