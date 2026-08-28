@@ -13,6 +13,7 @@ One finding, taken all the way through. I chose a case where the answer is genui
 | Policy version | expected-cost minimisation over five actions, no tuned threshold |
 | Cost version | fifteen cells in engineer-minutes, v1 |
 | Status | simulation — no admin credential, no live API call was made |
+| Revised | boundaries recomputed on the reachable belief line (0.09386 → 0.06588); cost cells de-rounded to exact component sums. The decision and the zero value of the probe are unchanged |
 
 ## Case
 
@@ -76,11 +77,11 @@ Choose the action with the lowest expected cost. There is no tuned threshold —
 
 | P(live) | Cheapest action |
 |---|---|
-| below 0.00070 | Dismiss |
-| 0.00070 – 0.09386 | Revoke now |
-| above 0.09386 | Rotate safely |
+| below 0.00145 | Dismiss |
+| 0.00145 – 0.06588 | Revoke now |
+| above 0.06588 | Rotate safely |
 
-This finding sits at **P(live) = 0.6329**, which is nearly seven times the rotate-safely boundary. Not a marginal call.
+This finding sits at **P(live) = 0.6329**, which is about ten times the rotate-safely boundary. Not a marginal call.
 
 ## Should I investigate first?
 
@@ -144,7 +145,7 @@ A revoked key's timestamp freezes at whatever it last did before being turned of
 
 Sums to 1.0000. **The belief flips** — from probably live to probably revoked. The live/revoked ratio goes from 1.778 to 0.456, and one call did all of it. Neither free feature moved that ratio by any amount at all.
 
-**5. Compare with the threshold.** P(live) = 0.3128, still well above the rotate-safely boundary of 0.09386.
+**5. Compare with the threshold.** P(live) = 0.3128, still well above the rotate-safely boundary of 0.06588.
 
 **6. New action.** **Rotate safely** — unchanged.
 

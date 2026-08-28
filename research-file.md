@@ -179,15 +179,17 @@ A key in a repository that has been private for years is unlikely to be found. A
 |---|---|---|---|
 | **Dismiss** | **2400** | 2 | 2 |
 | **Investigate** | 3 | 3 | 3 |
-| **Escalate** | 150 | 30 | 30 |
-| **Revoke now** | 330 | 2 | 5 |
-| **Rotate safely** | **120** | 30 | 20 |
+| **Escalate** | 142 | 32 | 32 |
+| **Revoke now** | 332 | 2 | 5 |
+| **Rotate safely** | **112** | 30 | 20 |
 
 The three cells that needed working out:
 
-- **Rotate safely on a live key = 120.** `10 issue + 30 find + 60 deploy + 10 verify + 2 revoke = 112`. This assumes the consumers are documented.
-- **Revoke now on a live key = 330.** `2 revoke + 240 outage + 30 find + 60 deploy = 332`. Exactly the same hunt and the same deploy as rotating safely — but production is down while it happens. **The outage term is the entire difference between my two remediation actions.**
-- **Escalate on a live key = 150.** `30 human attention + 120 they rotate safely`. Escalation can never be cheaper than the action the human then takes; it is that action plus their attention.
+- **Rotate safely on a live key = 112.** `10 issue + 30 find + 60 deploy + 10 verify + 2 revoke`. This assumes the consumers are documented.
+- **Revoke now on a live key = 332.** `2 revoke + 240 outage + 30 find + 60 deploy`. Exactly the same hunt and the same deploy as rotating safely — but production is down while it happens. **The outage term is the entire difference between my two remediation actions.**
+- **Escalate = 30 + whatever the human then correctly does**, giving 142 / 32 / 32. Escalation can never be cheaper than the action the human takes; it is that action plus their attention.
+
+**I rounded these at first and it caused a problem.** An earlier version wrote 120, 330 and 150/30/30, and the rounded values then disagreed with the component arithmetic elsewhere in my own notes — a reviewer found two sections using two different matrices. The sums are exact everywhere now.
 
 Dismissing a revoked or fake key is 2 rather than 0, because the finding comes back on the next scan and someone dismisses it again. Investigating costs the same in every column because the probe is paid for before I know which column I am in.
 
@@ -361,19 +363,24 @@ At my prior — 0.48 live, 0.27 revoked, 0.25 fake:
 | Action | Expected cost |
 |---|---|
 | Dismiss | 1153.04 |
-| Escalate | 87.60 |
-| Revoke now | 160.19 |
-| **Rotate safely** | **70.70** |
+| Escalate | 84.80 |
+| Revoke now | 161.15 |
+| **Rotate safely** | **66.86** |
 
 #### Three regimes I did not design
 
-Sweeping P(live) from 0 to 1 and asking which action is cheapest:
+Asking which action is cheapest as P(live) rises. With three states a boundary
+only means something relative to a path through the belief space, and my free
+features lock live:revoked at 1.778 — so the agent walks one line and never
+leaves it. These are measured on that line. (An earlier version measured them
+on a different slice and reported 0.0007 and 0.0939, which describe beliefs the
+agent cannot hold. A reviewer caught it.)
 
 | P(live) | Cheapest action |
 |---|---|
-| below 0.0007 | Dismiss |
-| 0.0007 – 0.0939 | **Revoke now** |
-| above 0.0939 | **Rotate safely** |
+| below 0.00145 | Dismiss |
+| 0.00145 – 0.06588 | **Revoke now** |
+| above 0.06588 | **Rotate safely** |
 
 The middle band is the one I did not expect. If a key is *probably dead*, revoking now is cheaper than rotating safely — there are no consumers to migrate, so you skip the deploy entirely and just kill it.
 
@@ -387,16 +394,18 @@ Take the belief where the agent is *maximally* confused — 1/3, 1/3, 1/3, entro
 
 | Action | Expected cost |
 |---|---|
-| **Rotate safely** | **56.67** |
-| Escalate | 71.33 |
-| Revoke now | 112.33 |
+| **Rotate safely** | **54.00** |
+| Escalate | 68.67 |
+| Revoke now | 113.00 |
 | Dismiss | 801.33 |
 
 The agent knows nothing at all and still does not want a human.
 
-The reason is that **rotate-safely is a hedge**. It costs 120 / 30 / 20 — tolerable in every state. When one action is decent no matter what is true, being confused costs almost nothing, so there is nothing worth paying to resolve.
+The reason is that **rotate-safely is a hedge**. It costs 112 / 30 / 20 — tolerable in every state. When one action is decent no matter what is true, being confused costs almost nothing, so there is nothing worth paying to resolve.
 
-Put precisely: the value of perfect information — what an oracle telling me the true state would be worth — is at most **24.64 engineer-minutes anywhere on the belief simplex**. A human costs 30. Even a perfect oracle is not worth asking.
+Put precisely: the value of perfect information — what an oracle telling me the true state would be worth — is at most **15.03 engineer-minutes at any belief I can actually reach** (24.78 over the whole simplex, but the maximiser there is a belief my free features rule out). A human costs 30, so even a perfect oracle is not worth asking.
+
+**This is a statement about my thirty-minute human, not about the problem.** Holding every other cost fixed and varying only that number: at 30 minutes the agent escalates nothing; at 12 it escalates 15.6% of findings; at 3 minutes or less it escalates everything. The crossover sits between 12 and 20. I wrote "the agent never escalates and I can prove it" above, and what I can actually prove is narrower — escalation is dominated *when interrupting a person costs more than about fifteen minutes*.
 
 #### What I got wrong about entropy
 
@@ -436,12 +445,12 @@ The ladder, each rung adding exactly one thing, so the experiment can measure wh
 |---|---|---|
 | **P0** | The prior only, no evidence | none — one action for everything |
 | **P1** | Free evidence, Bayes, hand-picked threshold | P(live) > 0.5, because 0.5 feels right |
-| **P2** | Free evidence, Bayes, expected cost | **0.0939**, derived |
+| **P2** | Free evidence, Bayes, expected cost | **0.06588**, derived |
 | **P3** | P2 plus the probe, bought when it pays | Week 2 |
 
 **Baseline:** escalate-everything. Never wrong, always costs a human.
 
-P1 against P2 is the comparison worth running. They see identical evidence and form identical beliefs. The only difference is where the line sits — 0.5 versus 0.0939, a factor of five. Every finding I am between 10% and 50% confident about, P1 walks away from and P2 acts on.
+P1 against P2 is the comparison worth running. They see identical evidence and form identical beliefs. The only difference is where the line sits — 0.5 versus 0.06588, a factor of about eight. Every finding I am between 10% and 50% confident about, P1 walks away from and P2 acts on.
 
 That makes the experiment answer something sharper than "does probability help", which is obvious and boring. It answers: **does deriving the threshold from costs, rather than picking a round number, change what the agent does?**
 
@@ -583,14 +592,36 @@ Questions 5 and 6 are the ones I would most like answered before I write the cos
 
 ## AI Prompts and Important AI Errors
 
+Where an error changed a published number, I say which.
+
 ### Prompts Used
 
 | # | Prompt | Response Summary |
-|---|--------|-----------------|
-| 1 |        |                 |
+|---|---|---|
+| 1 | Research prep: what are the hidden states behind a secret-scanner finding, and what does the field already know | Gave me the scanner-precision literature and the GitGuardian survival figure. Both are now the two factors in my prior |
+| 2 | Help me price fifteen cost cells from components rather than writing the cells down directly | Produced the nine-component decomposition. Also produced an arithmetic error I caught (entry 1 below) |
+| 3 | Sweep the entire belief simplex and tell me the maximum value of perfect information | Gave 24.64 minutes. Correct for the simplex, wrong for the question I was asking (entry 5) |
+| 4 | Work one finding end to end, price the probe before buying it | Produced the §10 decision record. EVSI came out at exactly 0.00, which I did not expect |
+| 5 | Review this preprint as a hostile IJCAI reviewer | Four models, four reviews, one verdict of reject. Logged in `review-record.md` |
+| 6 | Sample the whole cost model jointly rather than one axis at a time | Produced the robustness analysis, and a sampler bug I did not catch until a fifth review read the code (entry 7) |
 
 ### AI Errors
 
-| # | Prompt/Context | AI Output | What Was Wrong | Correction |
-|---|---------------|-----------|---------------|------------|
-| 1 |               |           |               |            |
+| # | Context | AI Output | What Was Wrong | Correction |
+|---|---|---|---|---|
+| 1 | Pricing the cost matrix | "Escalate on a live key = 30 + 180 = 150" | The arithmetic does not work, and rotate-safely on live was 120 not 180. I noticed the table and the explanation disagreed | Rotate-safely fixed to 112, escalate to 30 + 112 = 142. Every cell now shows its components |
+| 2 | Writing the README | An unprompted "honesty note" saying the repository had been rewritten into a clean order | I had not asked for it, and it framed normal practice as a confession | Removed. Only the pre-registration claim depends on chronology, and that is better made as a property of the committed case file |
+| 3 | Writing commit 1 | "This repository will be about twenty commits" | Nobody knows the commit count at commit one. It is a tell that the file was written from the end | Fixed count dropped entirely |
+| 4 | Writing commit 1 | A four-part taxonomy of when credential verification is unsafe, and a reference to "an earlier draft" that never existed | Asserted domain knowledge I did not have and cited something imaginary | Rewritten from my own stated reasoning only, with a standing rule: if a sentence needs knowledge I have not demonstrated, cut the sentence |
+| 5 | The escalation bound | "Max VPI = 24.64 minutes anywhere on the simplex, so escalation never wins" | True but not the right question. The maximiser sits at a belief my free features make unreachable | **Changed a published number.** The bound at reachable beliefs is 15.03. Same for the decision boundary: 0.09386 on the wrong slice, 0.06588 on the line the agent walks |
+| 6 | Comparing policies | P1 defined as "threshold 0.5, else dismiss", reported at +111.4% against the baseline | Confounded. It changed the threshold *and* removed two actions. The catastrophe came from dismissing, not thresholding | **Changed a result.** Same threshold with a revoke fallback beats the baseline by 12.4%. P1 with the full action set costs 77.79, not 181.78 |
+| 7 | Monte Carlo sampler | A single lognormal sigma derived from `log(high/low)` | Only correct when the estimate is the geometric midpoint of low and high. Eight of fourteen quantities were not, so the sampled ranges were not the published ones — `human` sampled 8.7–103.9 while claiming 5–60 | Two-piece lognormal: the estimate is the median, low and high are the 5th and 95th exactly. Survival percentages moved by 1–10 points |
+| 8 | Monte Carlo output | `json.dump(..., open("../results/...", "w"))` | Relative to the working directory, not the script. Crashed when run from the repository root | Anchored to the script's own directory with `makedirs` |
+| 9 | An extension suggested by a reviewer | "Probe which systems consume the credential — it may pay off even when the state is certain" | Plausible and wrong. The consumer hunt appears identically in both remediation actions, so it cannot choose between them | Tested and refuted. The boundary is invariant at 0.06588 for every value of the hunt from 30 to 480 minutes. Recorded as a result |
+| 10 | A reviewer's domain claim | "GitHub's validity checks make your premise false — the scanner tells you if the key is live" | Half right. GitHub does run validity checks, but its own pattern table marks OpenAI API Key as a partner pattern **without** validity-check support | Rejected on the facts, and the check now appears in §2 as a citation defending the premise. The same reply's *other* point — that OpenAI being a partner means public-repo leaks get reported and revoked — was accepted |
+
+**What I take from this table.** Four of the ten changed a published number, and
+three of those four were found by an AI reviewing another AI's work rather than
+by me. The two I caught myself (1 and 3) were both cases where a document
+contradicted itself on its own page — which seems to be the only class of error
+I reliably notice unaided.

@@ -175,14 +175,14 @@ which is cheaper than dropped after building it.**
 | **Options** | Pick a threshold that feels right and tune it · Take the action with the lowest expected cost and see where the boundaries land |
 | **Chose** | Derive |
 | **Why** | A tuned threshold is a number I would have to defend, and I have nothing to defend it with. A derived one is a consequence of the cost matrix, so arguing with it means arguing with a cost, which is a much more productive argument to have. |
-| **What fell out** | Three regimes, unasked for: dismiss below 0.0007, revoke now up to 0.0939, rotate safely above. **The boundary is at 0.09, not 0.5.** Anyone building this by instinct puts the line at "more likely than not" and dismisses everything this model rotates. |
+| **What fell out** | Three regimes, unasked for: dismiss below 0.00145, revoke now up to 0.06588, rotate safely above. **The boundary is at 0.066, not 0.5.** Anyone building this by instinct puts the line at "more likely than not" and dismisses everything this model rotates. |
 
 ### 6.2 Entropy is not the escalation trigger
 
 I expected uncertainty to be the thing that summons a human, because that is how
 everyone talks about it. So I checked the most uncertain point available — a
 third of the belief on each state, 1.585 bits, maximum possible confusion.
-Rotate safely still wins, 56.67 against escalate's 71.33.
+Rotate safely still wins, 54.00 against escalate's 68.67.
 
 **Uncertainty measures confusion. It does not measure whether the confusion is
 expensive.** Two roads at a fork are maximally uncertain and it does not matter
@@ -195,11 +195,13 @@ bits a probe removes — but it is not the trigger. **The cost of being wrong is
 Rather than test escalation at a few beliefs I swept the entire simplex and
 computed the value of a *perfect* oracle — the absolute ceiling on what any
 amount of human insight could be worth. Maximum across every possible belief:
-**24.64 minutes**, against a human who costs 30.
+**15.03 minutes** at any belief I can actually reach, against a human who costs
+30. (24.78 over the whole simplex, but that maximiser sits at a belief my free
+features rule out — an earlier version of this log quoted the simplex figure,
+which answered a question I was not asking.)
 
-Even an infallible expert is not worth asking. And the belief where that maximum
-occurs is one my model cannot reach anyway, because the free features lock the
-live-to-revoked ratio. So escalation loses twice over.
+Even an infallible expert is not worth asking *at thirty minutes*. That caveat
+turned out to carry the whole result: see the review round below.
 
 ---
 
@@ -323,15 +325,15 @@ actually costs.
 
 | | Policy | Expected cost | vs baseline |
 |---|---|---|---|
-| baseline | escalate everything | 87.60 | — |
-| P0 | prior only, no evidence | 70.70 | −19.3% |
-| P1 | evidence, threshold 0.5 | 185.21 | **+111.4%** |
-| P2 | evidence, cost-derived | 68.94 | **−21.3%** |
-| P3 | P2 plus the probe | 68.86 | −21.4% |
+| baseline | escalate everything | 84.80 | — |
+| P0 | prior only, no evidence | 66.86 | −21.2% |
+| P1 | hand-picked, all four actions | 77.79 | −8.3% |
+| P2 | evidence, cost-derived | 65.11 | **−23.2%** |
+| P3 | P2 plus the probe | 65.03 | −23.3% |
 
 **Almost none of the saving comes from the evidence.** P0 looks at nothing at
-all and already beats the baseline by 19.3%. My full belief model gets to 21.3%.
-The evidence is worth **1.76 minutes per finding**; the other nineteen points
+all and already beats the baseline by 21.2%. My full belief model gets to 23.2%.
+The evidence is worth **1.75 minutes per finding**; the other twenty-one points
 come from one decision — stop asking a human. This is the least flattering
 result in the project and it is the one I would lead with.
 
@@ -408,6 +410,77 @@ you pay but not what you do is worth nothing.**
 
 ---
 
+## The review round — where four models found what I could not
+
+I put the preprint in front of four AI reviewers with different briefs, then
+tested every claim I could. This is the part of the project where the most
+numbers changed.
+
+### R.1 The threshold comparison was confounded
+
+| | |
+|---|---|
+| **What I had** | P1 = "threshold 0.5, else dismiss", costing 111% more than the baseline, presented as my strongest argument for deriving boundaries |
+| **What was wrong** | It changed the threshold *and* removed revoke-now from the action set. Two reviewers found this independently |
+| **What is true** | The same 0.5 threshold with a revoke fallback **beats** the baseline by 12.4%. With all four actions P1 costs 77.79 — 8.3% better than the baseline, 19.5% worse than P2 |
+| **What survives** | P1 is non-monotonic under the prior: 60% worse than the baseline at a live share of 0.40, 8% better at 0.64. A fixed boundary cannot track a moving prior. Smaller claim, and the true one |
+
+### R.2 I measured the boundaries on a line the agent cannot occupy
+
+Three states means a boundary is only defined relative to a path through the
+simplex. My free features lock live:revoked at 1.778, so the agent walks one
+line — and I had computed on a different one. **0.09386 → 0.06588** for the
+decision boundary, **24.64 → 15.03** for the VPI bound. I had noticed the
+discrepancy myself hours earlier and not chased it.
+
+### R.3 Escalation was never structural
+
+Holding every other cost at its point estimate and varying only what a human
+costs: 100% of findings escalated at 3 minutes, 15.6% at 12, zero at 20 and
+above. My "the agent never escalates and I can prove it" was a statement about
+one number I guessed. The controlled sweep replaces it.
+
+### R.4 The whole belief-model result lives in one cell
+
+A reviewer asked why rotating a *fake* key costs 20 minutes when there is
+nothing to rotate. Testing it: at zero, P0 and P2 become **identical** and the
+belief model is worth precisely nothing. Every number in my headline finding
+rests on that one estimate.
+
+### R.5 One-at-a-time sweeps were flattering me
+
+Sampling all thirteen costs jointly, 40,000 draws: P2 beats the baseline in 98%
+of them, the boundary sits below 0.5 in 93%, and "escalate is chosen nowhere"
+holds in only 70%. The saving runs 0.5% to 51%. **The claims worth keeping are
+about ordering, not magnitude.**
+
+My first sampler was also wrong — a single lognormal spread that only produces
+the stated range when the estimate is the geometric midpoint of low and high.
+Eight of fourteen quantities were not, so the published ranges were not the
+sampled ones.
+
+### R.6 Perturbing the evidence model changed almost nothing
+
+The best result of the round, and I did not expect it. Perturbing every
+likelihood row — live and revoked independently, deliberately breaking the
+identical-rows property — moves the live:revoked ratio by a factor of twelve
+across buckets, and **no conclusion shifts by more than 3.2 points.** So the
+invariance is an idealisation and the conclusions resting on it do not need it.
+That is the answer to every reviewer who said repository visibility or commit
+semantics might separate the two states: even when something does, it barely
+changes what the agent does.
+
+### R.7 Two reviewer claims I tested and rejected
+
+**"GitHub's validity checks make your premise false."** GitHub's own pattern
+table marks OpenAI API Key as a partner pattern *without* validity-check
+support. Rejected on the facts — and the check now appears in the paper as a
+citation defending the premise rather than an assumption.
+
+**"Scaling the breach cost collapses the policies."** It does not. The
+revoke/rotate boundary holds at 0.06588 whether dismissing a live key costs
+2,400 or 120,000, because that component appears in neither action.
+
 ## What I would tell someone starting this
 
 **Closing options produced more than adding them.** One provider, three states,
@@ -426,6 +499,12 @@ results — one repriced a number by a factor of ten, one withdrew an assumption
 was leaning on.
 
 **The results that argued with me were the useful ones.** Escalation never
-winning, evidence being worth 1.76 minutes, the probe I was sure I should buy
+winning, evidence being worth 1.75 minutes, the probe I was sure I should buy
 being worth exactly nothing. A model that agreed with me everywhere would have
 told me only what I already believed.
+
+**And check the code, not just the conclusions.** Four reviewers read the paper
+and found real problems. The fifth read the *implementation* and found that my
+sampler had been drawing from ranges I had not published. Every review that
+only saw the write-up missed it, because the write-up described what I intended
+rather than what ran.

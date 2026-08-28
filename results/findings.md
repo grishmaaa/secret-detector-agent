@@ -10,57 +10,74 @@ Run it with `python experiments/run_experiment.py`.
 
 ## The table
 
-| | Policy | Expected cost | vs baseline | Escalates | Probes |
-|---|---|---|---|---|---|
-| baseline | escalate everything | 87.60 | — | 100% | 0% |
-| P0 | prior only, no evidence | 70.70 | −19.3% | 0% | 0% |
-| P1 | evidence, threshold 0.5 | 185.21 | **+111.4%** | 0% | 0% |
-| P2 | evidence, cost-derived | 68.94 | **−21.3%** | 0% | 0% |
-| P3 | P2 plus the probe | 68.86 | −21.4% | 0% | 4.0% |
+| | Policy | Expected cost | vs baseline | Escalates | Probes | Differs from P0 |
+|---|---|---|---|---|---|---|
+| baseline | escalate everything | 84.80 | — | 100% | 0% | — |
+| P0 | prior only, no evidence | 66.86 | −21.2% | 0% | 0% | — |
+| P1 | hand-picked thresholds, 4 actions | 77.79 | −8.3% | 0% | 0% | 14.55% |
+| P1-trunc | hand-picked, 2 actions only | 181.78 | **+114.4%** | 0% | 0% | 14.55% |
+| P2 | cost-derived | 65.11 | **−23.2%** | 0% | 0% | **14.55%** |
+| P3 | P2 plus the probe | 65.03 | −23.3% | 0% | 4.0% | 10.57% |
 
-On the forty cases: baseline 2880 minutes, P2 2130, a 26% saving.
+On the forty frozen cases: baseline 2820 minutes, P2 2018, a 28.4% saving. That
+draw holds 14 live keys out of 40 — a live share of 0.35 against a prior of
+0.48, about 1.6 standard deviations low — so the sampled figure and the exact
+one are not interchangeable.
 
 ## What I did not expect
 
 **Almost none of the saving comes from the evidence.** P0 looks at nothing at
 all — it knows the base rates and rotates every finding — and it already beats
-the baseline by 19.3%. P2 reads both free features and gets to 21.3%. So the
-evidence is worth **1.76 minutes per finding**, and the other nineteen points
-come from a single decision: stop asking a human. My whole belief model buys
-less than a tenth of the improvement. The cost structure does the work.
+the baseline by 21.2%. P2 reads both free features and gets to 23.2%. So the
+evidence is worth **1.75 minutes per finding**, and the other twenty-one points
+come from a single decision: stop asking a human. It does change the action on
+14.55% of findings, so it is not inert; the action it changes to is just cheap
+enough that the total barely moves.
 
-**The obvious threshold is worse than the procedure it replaces.** P1 is the
-policy a sensible engineer writes on the first afternoon: work out the
-probability, rotate if it is more likely than not, dismiss otherwise. It costs
-**more than twice** the baseline. My real threshold is 0.09, not 0.5, so
-everything between those two numbers gets dismissed instead of rotated — and
-dismissing a live key costs 2400. One case in the forty accounts for 2400 of
-P1's 4292 minutes.
+**My first version of the threshold comparison was confounded, and I am
+reporting the correction rather than the original.** P1 was defined as
+"threshold 0.5, else dismiss", which changed the boundary *and* removed
+revoke-now from the action set. Holding the threshold at 0.5 and varying only
+the fallback:
 
-**And P1 is not just bad, it is unstable.** Sweeping the live-versus-revoked
-split, P1 costs 185 at 64% live and **901 at 50%**. A modest change in an input
-I am not sure about flips the largest bucket of findings from rotate to dismiss
-and multiplies the bill by five. P2 moves from 68.9 to 59.4 across the same
-range — smoothly, and in the direction you would expect. A policy that reads a
-threshold off the cost matrix cannot fall off this cliff, because the threshold
-moves when the costs move.
+| Fallback | Cost | vs baseline |
+|---|---|---|
+| dismiss | 181.78 | +114.4% |
+| escalate | 71.13 | −16.1% |
+| revoke now | 74.25 | −12.4% |
+| rotate safely | 66.86 | −21.2% |
 
-**The probe changes behaviour without changing the total.** Repricing it from
-ten minutes to three made P3 buy it — but only on the neutral/malformed
-bucket, which is 4% of findings, worth about five minutes each. Aggregate gain
-over P2: **0.08 minutes per finding.** So the probe is genuinely worth buying
-where it fires, and it barely registers in the total. Both halves are true and
-I would rather report both than lead with the one that sounds better.
+**The catastrophe was dismissing, not thresholding.** Given all four actions and
+a second hand-picked cut at 0.05, P1 costs 77.79 — 8.3% better than the
+baseline, and 19.5% worse than P2. That is the honest size of the effect, and it
+is a much smaller claim than the one I made first.
 
-**Evidence is worthless when one action dominates.** With the outage priced at
-zero, revoke-now is cheapest in every state, and P0 and P2 both cost exactly
-46.0 — identical to two decimal places. Reading the features changes nothing,
-because there is nothing they could say that would change the action. That is
-the same thing the value-of-information calculation says about the probe, one
-level up: information is worth what it changes.
+**What does survive is the response to a prior I cannot pin down.** P1 is
+non-monotonic: 103.8 at a live share of 0.40, against a baseline of 65.0 — 60%
+*worse* than the baseline it beat at 0.64. P2 falls smoothly from 75.1 to 50.2
+across the same range. A fixed boundary cannot track a moving prior; one read
+off the cost matrix moves when the costs move.
 
-**No policy ever escalates.** Zero percent across all four, which is the
-simplex result showing up in a simulation rather than in an argument.
+**Evidence is worth nothing when one action wins everywhere.** Price the outage
+at zero and revoke-now is optimal at every reachable belief — P0 and P2 then
+cost *exactly* 46.0. Reading the features changes nothing because nothing they
+could say would change the action.
+
+**The probe matters most where the decision is closest.** It is worth 1.0
+minutes when an outage costs 60 and 0.08 when it costs 240 — twelve times more
+valuable when a cheap outage puts revoke-now and rotate-safely into close
+competition. Value of information concentrates at decision boundaries.
+
+**Every error is over-remediation.** Defining regret as what a hindsight-perfect
+agent would have saved, P2 gives up 398 minutes of 2018 — 19.7%. The five worst
+errors are the *same* error five times: a well-formed key in a real-looking
+file, rotated, already revoked, 28 minutes wasted each. Not one case in forty
+under-reacts. Full analysis in `error-analysis.md`.
+
+**And none of the magnitudes are stable.** Sampling the whole cost model jointly
+— 40,000 draws — the saving runs from 0.5% to 51%, and "escalate is chosen
+nowhere" holds in only 70% of them. The claims that survive are about ordering,
+not size. Full analysis in `robustness.md`.
 
 ## What is wrong with this experiment
 

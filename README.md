@@ -1,6 +1,6 @@
 # Deciding what to do about a possible key in a repository
 
-A cost-aware triage agent for secret-scanner findings. Week 1 project for the AI-native engineering cohort.
+A cost-aware triage agent for secret-scanner findings.
 
 ## The problem
 
@@ -55,15 +55,52 @@ The second half is the part I care about. A rule that wins under every assumptio
 | Assignment deliverable | Status |
 |---|---|
 | §3 problem statement | **Done** — stated above and in `research-file.md` |
-| §4 research file | **Mostly done** — terms, queries, sources and questions written. The Reddit and X tables are candidates only; nothing verified yet |
-| §5 Reddit discussions | **Started** — two posts, eight substantive replies. The targets are ten contributions across five communities |
+| §4 research file | **Done** — terms, queries, sources, questions, and the AI prompt/error tables. The X accounts table is candidates only |
+| §5 Reddit discussions | **Partly done** — two threads, eight substantive replies, two of which changed a number. Against a target of ten contributions across five communities |
 | §6 X discussions | **Not started** |
-| §7 discussion record | **Started** — two threads logged in full. One reply repriced a cost and changed a result |
+| §7 discussion record | **Partly done** — both threads logged in full with their design consequences. Bounded by §5 |
 | §8 agent design | **Done** — all seven parts settled and implemented in `experiments/run_experiment.py` |
-| §9 experiment | **Done** — four policies against the baseline on forty frozen cases. Results in `results/findings.md` |
+| §9 experiment | **Done** — five policies against the baseline on forty frozen cases, five one-at-a-time sweeps, a five-error regret analysis, a probe-price sweep, and a 40,000-draw joint sensitivity study. Results in `results/` |
 | §10 probability decision record | **Done** — one finding worked end to end in `decisions/` |
-| §11 AI reviews | Not started — template |
-| §13 preprint | Not started |
-| §14 publication | Not started |
+| §11 AI reviews | **Done** — four independent reviews with accept/reject and evidence in `review-record.md`, including two claims tested and rejected |
+| §13 preprint | **Drafted** — `paper/preprint.md`, revised against all four reviews. Not yet in LaTeX |
+| §14 publication | **Not started** |
 
-The public-discussion requirements — §5 and §6 — are essentially unmet, and I would rather say so on the front page than let a marker discover it. They are also the requirements nobody else can do for me, and the ones the cost numbers this agent depends on are supposed to come from. Every other gap above is work I know how to do; that one is not. It is also the reason every number in my cost model is currently invented — those figures are supposed to come from people who have done this. That has started to change: the probe's cost is now the one number in my matrix that came from practitioners rather than from me, and correcting it changed which actions the agent takes.
+## What is in here
+
+| Path | What it holds |
+|---|---|
+| `research-file.md` | The working document: problem, scope, provider choice, cost model, belief model, policy, feedback, sources, and the AI prompt and error tables |
+| `discussion-record.md` | Every public contribution and what it changed |
+| `review-record.md` | Four AI reviews, each comment accepted or rejected with a reason |
+| `decisions/probability-decision-record.md` | §10 — one finding taken all the way through, including a probe priced at zero value |
+| `decisions/decision-log.md` | Every decision from the first commit onward: the options, the choice, the reasoning, and what it later turned out to cost |
+| `experiments/run_experiment.py` | The agent and the policy comparison |
+| `experiments/errors.py` | Regret analysis over the frozen cases |
+| `experiments/probe_sweep.py` | Where buying evidence starts to pay |
+| `experiments/monte_carlo.py` | Joint sensitivity over the whole cost and evidence model |
+| `results/findings.md` | What the experiment said |
+| `results/error-analysis.md` | Five incorrect decisions, examined |
+| `results/robustness.md` | Which conclusions survive when everything is wrong at once |
+| `paper/preprint.md` | The draft preprint |
+| `paper/limitations.md` | The long-form limitations |
+| `data/cases.json` | Forty frozen cases, written once and never regenerated |
+
+## Honest state of the work
+
+The public-discussion requirements — §5 and §6 — are the weakest part. Two
+communities against a target of five, and nothing on X. They are also the
+requirements nobody else can meet for me, and the ones my cost numbers are
+supposed to come from.
+
+That said, they are no longer producing nothing. Two practitioner replies
+changed published numbers: one repriced the probe by a factor of ten, which
+moved the investigate action from never selected to selected on about 4% of
+findings; another withdrew an assumption I had been leaning on, that rotating a
+key verifies itself. A third established that live-versus-revoked is a solved
+problem for certificates and an unsolved one for API keys, which is the clearest
+justification I have for the scope I chose.
+
+Every cost number except the probe is still my own estimate. That is why the
+project ends in a 40,000-draw sensitivity study rather than a point estimate,
+and why the conclusions I keep are about ordering rather than magnitude.

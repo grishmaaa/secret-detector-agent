@@ -126,8 +126,8 @@ at an outage cost of 60 minutes or less, revoke-now becomes competitive.
 ## 5. The headline result is the one I trust least
 
 P0 — acting on the prior with no evidence at all — beats the escalate-everything
-baseline by 19.3%, and the full belief model reaches only 21.3%. On these
-numbers the evidence is worth 1.76 minutes per finding and the cost structure
+baseline by 21.2%, and the full belief model reaches only 23.2%. On these
+numbers the evidence is worth 1.75 minutes per finding and the cost structure
 does everything else.
 
 I believe the direction of that result and not its size. It depends on
