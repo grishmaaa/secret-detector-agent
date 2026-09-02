@@ -1,9 +1,17 @@
 # Review Record
 
-Three independent AI reviews of `paper/preprint.md`, each given the paper cold
-with a different brief: methods and correctness, domain realism, and venue
-acceptance. A fourth exchange with ChatGPT earlier in the project is included at
-the end because it produced two substantive points.
+Three independent AI reviews of the preprint, each given the paper cold with a
+different brief, one for each of the three required review types:
+
+| Review type | Brief given to the reviewer | Reviewer |
+|---|---|---|
+| **Practitioner review** | Unrealistic assumptions, missing stakeholders, deployment risk, actions that cause harm, actions that cause unnecessary work | Reviewer B — domain realism |
+| **Probability review** | Hidden states, prior, likelihoods, thresholds, error costs, calibration, evidence for alternative explanations | Reviewer A — methods and correctness |
+| **Preprint review** | Problem statement, new information, methods, test design, baseline, repeatability, limitations, ethics, unevidenced claims, questions for the next version | Reviewer C — venue acceptance |
+
+A fourth exchange with ChatGPT earlier in the project is included at the end
+because it produced two substantive points, and three later rounds against the
+compiled paper are recorded further down.
 
 **On independence.** All three reviewers are Claude instances with fresh
 context — no memory of how the project was built. That removes investment in
@@ -187,6 +195,37 @@ better question.
 5. What does "malformed" mean for a string that already matched the scanner's
    pattern?
 
+## Later rounds, after the LaTeX draft
+
+Three further rounds once the paper compiled. I am recording these separately
+because their character is different: the first four reviews read a draft and
+found defects in it, whereas these three mostly re-derived my own results and
+the value was in where they disagreed.
+
+| Source | Comment | Accept or Reject | Reason | Change |
+|---|---|---|---|---|
+| Gemini | The formulation is right and a generic four-state sketch of this problem is wrong | **No change** | It was correcting a different answer, not mine. Every "correct specification" in it was copied out of my paper | None. Recorded so the round is not mistaken for validation I earned twice |
+| Gemini | "The ordering P2 < P0 < P1 < baseline is robust across 98.64% of draws" | **Reject** | The figure belongs to one pairwise claim. The compound ordering is bounded by 79.20% and P1 was never swept | Kept out of the paper. Logged as AI error 15 |
+| Gemini | Adding git-history and passive organisational signals is the lever that breaks the 1.778 invariance and removes the 19.7% regret | **Reject** | I had already run the experiment that bears on it. Sweep B breaks the invariance deliberately and moves no conclusion by more than 3.2 points | None to the model. The channels are named in limitations without likelihood tables, because inventing eight more would deepen the weakness they are meant to address |
+| Gemini | `expires_at` from the provider's admin API as a new evidence channel | **Accept, unbuilt** | It arrives on the same admin call I already price at three minutes, so it is a free strictly-more-informative upgrade to the probe rather than a new channel with a new price. The only suggestion in the list that could raise EVSI without raising cost | Named in limitations as the extension with the best ratio of value to work |
+| Gemini | Historical triage tickets as a labelled dataset | **Reject** | They record what a responder decided, not what the key was. My own regret analysis finds every error is over-remediation, so a corpus labelled by responder behaviour encodes that bias as ground truth | Written into §6.1 as a second paragraph beside the SecretBench argument |
+| Independent sourced rebuild | The whole model reparameterised in dollars with every figure traced to a citation, gaps marked | **Accept in part** | Its indifference point is 0.079%; my dismiss branch is unreachable below 0.15%. Two unrelated parameterisations, the same conclusion: ignore is not reachable and remediation is the default | The unreachability of dismiss promoted from a figure caption to a stated result, since it is the only place the model agrees with practice on something I did not tune it to agree with |
+| Independent sourced rebuild | Exposure channel dominates: time from public commit to first attacker contact is reported in minutes against remediation in weeks, so for public leaks the governing state is *compromised*, not *live* | **Accept** | It is a condition on the whole model, not a caveat on one result. My paper had it as half a sentence in limitations | **Changed the paper's scope.** §1 now opens with private and internal exposure as a stated restriction |
+| Independent sourced rebuild | Naive Bayes over correlated repo-context features saturates the posterior and makes the threshold inert | **Accept** | The sharpest methodological point anyone has made about this work, and none of the first four reviews caught it | Produced `experiments/shrinkage.py`. Results in §4.3 and `results/shrinkage.md` |
+| Independent sourced rebuild | Report suppression rate as the headline, not the rotate/ignore decision — "report that your agent decides whether to rotate and a reviewer will ask why you did not just rotate" | **Accept as diagnosis, open as change** | This is exactly the rejection I received, written down before I received it | Not yet acted on. It implies reframing the contribution as detector, ranker and probe planner, which is a bigger change than the paper can absorb this week |
+| Practitioner critique | Two-part credentials — an AWS `AKIA` access key ID is public, so `GetAccessKeyLastUsed` returns `Active` or `Inactive` for that exact key without touching the secret half | **Accept** | This dissolves my decision problem for AWS, Stripe, JWTs and STS credentials. The problem is a property of credential formats that expose no public identifier, and I chose the hard case by accident | Reframes the scoping paragraph from an arbitrary choice into a claim about which formats make the state observable. **Not yet written into §3.1** |
+| Practitioner critique | Authenticating with a found key can trip a deliberately planted canary token and alert whoever planted it | **Accept** | A second reason for my constraint that is operational rather than moral, and the stronger one with practitioners | §1 now states the constraint as contested rather than mine alone, with both reasons |
+| Practitioner critique | Liveness evidence buys queue ordering, not permission to ignore | **Accept** | Independently reached by a practitioner in the r/devops thread as "still-live is a nice-to-have after quarantine" | Same change as the sourced rebuild above. Two unrelated sources, one conclusion |
+
+### On independence, again
+
+Five of these twelve rows are the same model family as the first four reviews.
+The practitioner rows are the only ones from people, and they produced the two
+changes I would defend hardest — the constraint's second justification and the
+credential-format reframe. The AI rounds were most useful when they disagreed
+with each other, and least useful when they read my paper back to me with new
+numbers attached, three of which were wrong.
+
 ## Verdict
 
 Reviewer C: **reject**, with the single most valuable change being to ground the
@@ -195,3 +234,13 @@ likelihoods in real data and report the P0-versus-P2 disagreement rate.
 I am recording that verdict without arguing with it. Items 1, 2 and 5 above are
 real defects, not differences of taste, and two of them were things I could have
 caught myself.
+
+**A second verdict, from outside.** The finished preprint was submitted and
+rejected as basic and not research-worthy. I am recording that here rather than
+only in the publication section, because Reviewer C predicted it — textbook
+expected-cost minimisation on a hand-built instance — and because the later
+sourced rebuild predicted the exact form the objection would take. Two reviews
+told me before submission and I read both as things to fix in the writing rather
+than as statements about what the work was. The defect is that every input is my
+estimate, and no amount of sensitivity analysis converts an estimate into a
+measurement.

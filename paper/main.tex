@@ -5,8 +5,8 @@
 %%%% they come from the official author kit and are not redistributed here).
 %%%%
 %%%% LENGTH: the main track allows seven pages plus at most two for
-%%%% references, acknowledgements and statements. This draft is longer; the
-%%%% sensitivity subsections are the first candidates for an appendix.
+%%%% references, acknowledgements and statements. This preprint runs slightly
+%%%% longer and is not padded to a limit; nothing here exists to fill space.
 
 \documentclass{article}
 \pdfpagewidth=8.5in
@@ -31,8 +31,9 @@
 \usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
 \usepackage[switch]{lineno}
 
-% Comment out this line in the camera-ready submission
-\linenumbers
+% Line numbers are a blind-submission aid and collide with display math in
+% two-column layout. Uncomment only if submitting for review.
+%\linenumbers
 
 \urlstyle{same}
 
@@ -75,9 +76,10 @@ Three results were not designed in. First, the two free features we model cannot
 distinguish a live key from a revoked one at all: both states carry identical
 likelihoods on each, so their posterior ratio is invariant at $1.778$, which
 also confines the agent to a one-dimensional slice of the belief simplex.
-Second, escalation \emph{as a way of resolving the hidden state} is never
-cost-optimal at any reachable belief: a perfect oracle is worth at most $15.03$
-minutes there. Third, and least flattering, a policy that observes
+Second, escalation is dominated at every reachable belief \emph{whenever a
+human interruption costs more than $15.03$ minutes}, which is the value of a
+perfect oracle there; we state this as the parametric claim it is, because
+below that price escalation returns. Third, and least flattering, a policy that observes
 \emph{nothing at all} already captures $21.2$ of the $23.2$ percentage points.
 Joint sensitivity analysis over 40{,}000 sampled cost models shows the ordering
 of these results is stable and the magnitudes are not.
@@ -88,7 +90,11 @@ of these results is stable and the magnitudes are not.
 Secret scanners are widely deployed and reasonably good at what they do. What
 they produce is a finding: \emph{this string, in this file, looks like a
 credential of this type}. What they do not produce is the thing a responder
-actually needs, which is whether the credential still works.
+actually needs, which is whether the credential still works. This is not an
+oversight in any one tool. GitHub's published pattern table lists the OpenAI
+project key as a supported partner pattern with no validity
+check~\cite{github2026patterns}: the finding arrives with the format confirmed
+and the state unknown, which is the situation this paper takes as its input.
 
 The gap matters because the available actions differ enormously in cost. Doing
 nothing about a live key risks whatever sits behind it. Revoking immediately is
@@ -99,9 +105,25 @@ on a hidden state, and the standard method for resolving that state---issuing a
 request with the found credential---is not one we are willing to use against a
 third party's account.
 
-That constraint is the origin of the problem we study. It is our choice, not a
-consensus position: three practitioners told us, unprompted, to simply try the
-key. We keep it, and treat it as the paper's most load-bearing assumption.
+That constraint is the origin of the problem we study. It is our choice and it
+is contested: three practitioners told us, unprompted, to simply try the key,
+while others state the opposite as a rule, on the grounds that authenticating
+with a found credential converts a leak into a login and may trip a
+deliberately planted honeytoken. We keep the constraint, and treat it as the
+paper's most load-bearing assumption.
+
+\paragraph{Scope: private and internal exposure.} A second restriction does
+more work than its length suggests. Everything below assumes the finding was
+not publicly reachable. For a credential exposed in a public repository the
+state that governs the response is not whether the key still authenticates but
+whether an adversary already holds a copy, and reported times from public
+commit to first contact by an automated harvester are measured in minutes
+against remediation times measured in weeks. Under those conditions
+remediation is unconditional and no belief over \emph{live} and \emph{revoked}
+can change the action. The decision problem we study is therefore a
+private-repository and internal-exposure problem. We state it here rather than
+among the limitations because it is a condition on the whole model and not a
+caveat on one result.
 
 \paragraph{Contributions.}
 \begin{enumerate}
@@ -117,8 +139,9 @@ claim, and it is a property of the features chosen, not of repository evidence
 in general.
 \item A parametric bound on escalation: a perfect oracle is worth at most
 $15.03$ minutes at any reachable belief, so escalation cannot be justified on
-information-gathering grounds whenever human triage overhead exceeds that. This
-bounds a human acting as a state oracle; it says nothing about a human who
+information-gathering grounds whenever human triage overhead exceeds that.
+Section~\ref{sec:robustness} measures how fast it returns below that price. The
+bound covers a human acting as a state oracle and says nothing about one who
 supplies authority or organisational context.
 \item A closed-world comparison showing that most of the improvement over the
 baseline comes from the cost structure rather than from the belief model, and
@@ -129,7 +152,7 @@ identifying which conclusions are robust and which are artefacts of point
 estimates.
 \end{enumerate}
 
-\section{Related Work}
+\section{Related Work and User Discussions}
 
 \paragraph{Detector precision is not a constant.}
 A nine-tool comparison~\cite{basak2023comparative} reports precision of about
@@ -147,7 +170,7 @@ treat it as a hypothesis, but it points the opposite way to intuition: commit
 age is weak evidence that a key is dead.
 
 \paragraph{Classification of secrets with language models.}
-Recent work~\cite{islam2025secretbreach} reports GPT-4o at $93.29\%$ precision
+Recent work~\cite{rahman2025secretbreach} reports GPT-4o at $93.29\%$ precision
 few-shot for deciding whether a string \emph{is} a secret. This is the obvious
 alternative technology and answers a different question: it improves detection
 and says nothing about whether a detected credential is live, which is the axis
@@ -205,19 +228,20 @@ implications and may have been reused elsewhere.
 
 \begin{table}[t]
 \centering
-\begin{tabular}{ll}
+\small
+\begin{tabular}{lll}
 \toprule
-\textbf{Action} & \textbf{What it does} \\
+\textbf{Action} & \textbf{What it does} & \textbf{Coarse} \\
 \midrule
-Dismiss & Nothing. The finding is closed. \\
-Investigate & Buy evidence, then decide again. \\
-Escalate & Hand the decision to a human. \\
-Revoke now & Kill the key; accept the outage. \\
-Rotate safely & Replace, migrate, verify, revoke. \\
+Dismiss & Nothing; the finding is closed. & ignore \\
+Investigate & Buy evidence, decide again. & verify \\
+Escalate & Hand the decision to a human. & --- \\
+Revoke now & Kill the key, accept the outage. & remove \\
+Rotate safely & Replace, migrate, verify, revoke. & remove \\
 \bottomrule
 \end{tabular}
-\caption{The five candidate actions. Section~\ref{sec:notterminal} argues only
-three are terminal.}
+\caption{The five candidate actions, and the coarser vocabulary they refine.
+Section~\ref{sec:notterminal} argues only three are terminal.}
 \label{tab:actions}
 \end{table}
 
@@ -261,6 +285,22 @@ rarely or never: \textsc{investigate} fires on $4\%$ of findings,
 reach. That two of five actions go unused is a result, not an omission.}
 \label{fig:pipeline}
 \end{figure}
+
+The vocabulary usually used for this task is coarser: a triage agent may
+\emph{ignore}, \emph{verify}, or \emph{remove} a possible secret. The third
+column of Table~\ref{tab:actions} maps our set onto it. Two departures are worth
+stating. \textsc{Remove} is split, because revoking and rotating differ by an
+outage and win in different regions of the belief simplex---and the split turns
+out to be where the paper's derived boundary lives. \textsc{Escalate} has no
+coarse counterpart at all; it is our addition, priced as an action rather than
+assumed as a fallback, and Section~\ref{sec:escalation} is the argument for
+having added it.
+
+A note on \emph{verify}, since the word invites a reading this paper rejects.
+Verifying here means buying metadata about the key from an account we control.
+It does not mean presenting the found credential to its provider and reading the
+response. The distinction is the paper's load-bearing constraint, and the
+coarse vocabulary does not make it.
 
 Revoke-now and rotate-safely are kept separate because leaving a system broken
 in order to be safe is not automatically correct, and a model that cannot
@@ -346,7 +386,7 @@ Form: well/mal & .99/.01 & .99/.01 & .40/.60 \\
 \label{tab:likelihoods}
 \end{table}
 
-\subsection{A structural consequence}
+\subsection{A consequence of the features we chose}
 \label{sec:invariance}
 
 Note the first two rows of Table~\ref{tab:likelihoods}. \textbf{Live and revoked
@@ -368,8 +408,28 @@ not at all.
 value, in any combination. We state it narrowly on purpose: this is a property
 of the two static text features we chose, not of repository evidence in general.
 Section~\ref{sec:limitations} names two we did not model---repository visibility
-and commit semantics---that would plausibly separate the two states, and the
-claim is safest read as applying to findings in private repositories.
+and commit semantics---that would plausibly separate the two states.
+
+\paragraph{The two halves of this result are not equally safe.} The posterior
+multiplies the two feature likelihoods, which assumes they are conditionally
+independent given the state. They are not: a \texttt{tests/fixtures/} path and a
+placeholder-looking variable name are close to one observation counted twice.
+Weighting each channel's log-likelihood by $w < 1$ is the standard correction,
+and the two halves respond to it very differently.
+
+The invariance is untouched at every $w$, including $w = 0$, because
+\emph{live} and \emph{revoked} carry identical rows and raising both to the same
+power leaves them identical. It follows from two rows being equal and not from
+independence, so a dependence correction cannot reach it.
+
+The \emph{fake} collapse is not safe. At $w = 1$ the strongest evidence puts
+$P(\emph{fake})$ at $0.0111$; a $20\%$ shrinkage puts it at $0.0216$ and a $50\%$
+shrinkage at $0.0576$, five times the figure above. We report $0.011$ because it
+is what the stated model gives, but it should be read as the favourable end of a
+range rather than as a measurement. Section~\ref{sec:robustness} carries the
+full sweep, including the fact that the policy is nearly indifferent to all of
+this: $P_2$ moves by $0.27$ minutes at $w = 0.8$ against a baseline of $84.80$,
+and collapses onto $P_0$ entirely at $w = 0.5$.
 
 \subsection{Costs}
 
@@ -578,6 +638,26 @@ authenticate}, and the reason is the one that motivates this paper: establishing
 it would mean testing each key against its provider. The label is missing from
 the dataset for precisely the reason the state is hidden from our agent.
 
+\textbf{What could ground each table.} The model holds three probability tables
+and they are not equally stranded. The two free-feature rows could be fit from
+SecretBench, as above. The probe row could be grounded only in a first-party
+testbed: keys issued in an account we control, revoked on a schedule we record,
+and read through the same administrative metadata the agent buys. That is the
+one construction in which live and revoked are both known and observable without
+touching anyone else's account, and we name it because our claim is that no
+\emph{public} corpus can supply the axis, not that nothing can. It would ground
+the probe row alone. The prior and the placement of keys across files would
+remain ours by construction, and no outage would be incurred, so the cost matrix
+would stay exactly where Section~\ref{sec:robustness} leaves it.
+
+One tempting source is not usable at all. Historical triage tickets appear to
+carry labels---the responder rotated the key, or closed the finding as already
+dead---but they record what a responder decided, not what the key was.
+Section~\ref{sec:regret} finds that every error our own policy makes is
+over-remediation. A corpus labelled by responder behaviour would encode that
+same tendency as ground truth, and an agent fitted to it would be trained to
+reproduce the waste this paper exists to measure.
+
 \section{Results}
 \label{sec:results}
 
@@ -673,39 +753,6 @@ Varying the cost of rotating a \emph{fake} key: at 0, P0 and P2 are
 20 the gap is $1.75$; at 120 it is $14.18$. Every result in the preceding
 subsection therefore rests on a single estimated cell.
 
-\subsection{Where the policy loses, and what it never does}
-
-Defining an incorrect decision as one a hindsight-perfect agent would have made
-differently, with regret $c(a,s) - \min_{a'} c(a',s)$, P2 pays $2018$ minutes
-against a hindsight-optimal $1620$: total regret $398$ minutes, $19.7\%$.
-
-The five costliest errors are the \emph{same} error five times: a well-formed
-key in a real-looking file, rotated, already revoked, 28 minutes wasted each.
-The agent has no idiosyncratic failures, only one systematic bias---the
-invariant ratio arriving as a bill. Those decisions were correct given the
-information and wrong given the world.
-
-\begin{table}[t]
-\centering
-\begin{tabular}{llrr}
-\toprule
-\textbf{Chose} & \textbf{On a key that was} & \textbf{Cases} & \textbf{Regret} \\
-\midrule
-rotate safely & revoked & 11 & 308 \\
-rotate safely & fake & 3 & 54 \\
-revoke now & fake & 12 & 36 \\
-\emph{(correct)} & --- & 14 & 0 \\
-\bottomrule
-\end{tabular}
-\caption{Every error is over-remediation. Not one case in forty under-reacts.}
-\label{tab:errors}
-\end{table}
-
-The two expensive errors available---dismissing a live key (regret 2288) and
-revoking one (220)---did not occur. The first cannot: P2 never dismisses at a
-reachable belief. The second can, and roughly two were expected on this draw;
-zero occurred, which is a sampling accident rather than a property.
-
 \subsection{Joint sensitivity}
 \label{sec:robustness}
 
@@ -777,6 +824,42 @@ Every point estimate sits near its median, so our cost model is not an outlier
 among plausible ones; the intervals are nonetheless very wide. \textbf{The
 claims worth keeping are about ordering rather than magnitude.}
 
+\section{Failure Analysis}
+
+\label{sec:regret}
+
+Defining an incorrect decision as one a hindsight-perfect agent would have made
+differently, with regret $c(a,s) - \min_{a'} c(a',s)$, P2 pays $2018$ minutes
+against a hindsight-optimal $1620$: total regret $398$ minutes, $19.7\%$.
+
+The five costliest errors are the \emph{same} error five times: a well-formed
+key in a real-looking file, rotated, already revoked, 28 minutes wasted each.
+The agent has no idiosyncratic failures, only one systematic bias---the
+invariant ratio arriving as a bill. Those decisions were correct given the
+information and wrong given the world.
+
+\begin{table}[t]
+\centering
+\begin{tabular}{llrr}
+\toprule
+\textbf{Chose} & \textbf{On a key that was} & \textbf{Cases} & \textbf{Regret} \\
+\midrule
+rotate safely & revoked & 11 & 308 \\
+rotate safely & fake & 3 & 54 \\
+revoke now & fake & 12 & 36 \\
+\emph{(correct)} & --- & 14 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Every error is over-remediation. Not one case in forty under-reacts.}
+\label{tab:errors}
+\end{table}
+
+The two expensive errors available---dismissing a live key (regret 2288) and
+revoking one (220)---did not occur. The first cannot: P2 never dismisses at a
+reachable belief. The second can, and roughly two were expected on this draw;
+zero occurred, which is a sampling accident rather than a property.
+
+
 \section{Discussion}
 
 Three of this paper's results are negative, and we think that is the point. The
@@ -801,7 +884,7 @@ requires no probabilistic machinery. Section~\ref{sec:onecell} shows that rests
 on a single estimated cell, and at zero that cell makes the belief model worth
 precisely nothing. The finding and its weakest input are the same input.
 
-\section{Limitations}
+\section{Limitations, Ethics, and Human Control}
 \label{sec:limitations}
 
 \textbf{The refusal to test the key is ours alone.} Three practitioners advised
@@ -849,7 +932,7 @@ definition yet carries none of the risk that makes dismissing a live key cost
 \textbf{No live call was made.} No admin credential was held, and the repository
 contains no credential material; every string is a synthetic feature descriptor.
 
-\section{Conclusion}
+\section{Conclusion and New Questions}
 
 We formulated secret-scanner triage as a decision under uncertainty in which the
 hidden state cannot be observed without doing something we are unwilling to do,
@@ -863,6 +946,24 @@ puts the saving anywhere between $0.5\%$ and $51\%$. In this domain a safe
 action that is cheap in every state does most of the work a belief model appears
 to be doing---and the contribution of decision theory here is less the posterior
 than the discipline of pricing the actions before choosing between them.
+
+\section*{Code and Data}
+
+The model, the experiment harness, the frozen cases, and the scripts that
+generate every figure and table in this paper are at
+\url{https://github.com/grishmaaa/secret-detector-agent}. The repository
+contains no credential material: every string in the case set is a synthetic
+feature descriptor.
+
+\section*{Use of AI Assistance}
+
+AI systems were used throughout this work---to search the literature, to draft
+and revise prose, to review the model, and to critique the code. Every number
+reported here was produced by the scripts in the repository and checked against
+their output rather than taken from a model response. The errors that came in
+this way, and the prompts that produced them, are logged in
+\texttt{research-file.md} alongside the corrections. The decisions about what to
+model, what to price, and which of my own results to withdraw are mine.
 
 \section*{Acknowledgements}
 

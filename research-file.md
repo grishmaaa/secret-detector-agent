@@ -547,9 +547,69 @@ How I intend to build the list:
 3. Take the author names from the papers below, search each one, and confirm the account matches their institution page before following.
 4. Deliberately include people who are sceptical of scanning, or who think rotation is more dangerous than exposure. My cost reasoning is weakest where the only voices are vendors selling scanners.
 
+Twenty followed. Grouped by what they are for, because the groups are not
+equally close to my problem and pretending otherwise would be dishonest.
+
+**Detection and credential state — the core of my problem**
+
 | # | Handle | Area of Expertise | Why Relevant | Verified? |
 |---|--------|--------------------|-------------|-----------|
-| 1 |        |                    |             | [ ]       |
+| 1 | `@GitGuardian` | Secrets detection, secrets sprawl research | Publishes the credential-survival figure my prior is built from | [x] |
+| 2 | `@trufflesec` | TruffleHog: find, verify and analyse leaked credentials | Verification is their product, so they are the clearest statement of the position my constraint rejects. They have also published static detection of AWS canary tokens and a permissions analyser | [x] |
+| 3 | `@semgrep` | Static analysis, AppSec rules | The detection layer my agent takes as given | [x] |
+| 4 | `@snyksec` | SCA and secret scanning | One of the tools in the precision comparison I cite | [x] |
+| 5 | `@step_security` | GitHub Actions and CI/CD supply chain | Posts on live attacks that harvest CI/CD secrets from runner memory. The closest account on this list to the moment a credential actually leaks | [x] |
+| 6 | `@GHSecurityLab` | GitHub's security research | Owns the scanner whose findings are my agent's input | [x] |
+| 7 | `@github` | Platform | Publishes the partner-pattern table my premise cites | [x] |
+| 8 | `@GHchangelog` | Product changes | Where a change to secret-scanning validity checks would appear first, and such a change would weaken my premise | [ ] |
+| 9 | `@owasp` | Application security guidance | Broad, but the community that frames remediation practice | [ ] |
+| 10 | `@0xdabbad00` | Scott Piper, independent AWS security | The public-identifier point is his territory: an `AKIA` access key ID is not secret, so key status is readable from your own admin API without touching the secret half | [x] |
+| 11 | `@troyhunt` | Have I Been Pwned, breach data | The clearest working example of my unanswered question about who bears the cost of an incorrect action — his entire project exists because third parties carry the loss from someone else's exposure | [x] |
+| 12 | `@clintgibler` | tl;dr sec, AppSec research summaries | Reads papers and replies to people. The most likely account on this list to engage with a decision-theoretic argument | [x] |
+
+**Offensive side — the people who find and use the keys**
+
+| # | Handle | Area of Expertise | Why Relevant | Verified? |
+|---|--------|--------------------|-------------|-----------|
+| 13 | `@Jhaddix` | Bug bounty, recon | Finds exposed credentials as a matter of routine. Useful counterweight to defender assumptions about how long exposure lasts | [x] |
+| 14 | `@_JohnHammond` | Malware and incident analysis | Same reason. Attacker-side timelines are the evidence my public-exposure scope condition rests on | [ ] |
+| 15 | `@PhillipWylie` | Offensive security, pentesting | Same group | [ ] |
+
+**Prevention and detection-avoidance — the position that my problem should not exist**
+
+| # | Handle | Area of Expertise | Why Relevant | Verified? |
+|---|--------|--------------------|-------------|-----------|
+| 19 | `@doppler` | Secrets management, credential delivery | Added deliberately as the counter-position. Three people answered my Reddit question about evidence by saying the secret should never have been in the repository. Short-lived credentials are the strongest form of that argument, because they do not merely prevent the leak, they dissolve my hidden state: a credential that expires in an hour is *revoked* by the time anyone triages it | [x] |
+| 20 | `@ThinkstCanary` | Canary tokens, deception-based detection | The operational reason my constraint exists, now cited in the limitations. A canary token is a credential designed to be authenticated with, so testing a found key can alert whoever planted it. They also maintain the account IDs that make such tokens detectable offline | [x] |
+
+**Agent construction — relevant to how the agent is built, not to secrets**
+
+| # | Handle | Area of Expertise | Why Relevant | Verified? |
+|---|--------|--------------------|-------------|-----------|
+| 16 | `@bcherny` | Claude Code | Agent tooling. Not adjacent to my problem domain | [x] |
+| 17 | `@hwchase17` | LangChain | Agent frameworks. My one genuine question for this group: where the credential-handling boundary sits when an agent processes a repository, since a commenter asked me directly whether secret values reach a language model | [x] |
+| 18 | `@jerryjliu0` | LlamaIndex | Same question | [ ] |
+
+**On the composition of this list, including what it was missing.** My criterion
+above says to deliberately include people who are sceptical of scanning, or who
+think rotation is more dangerous than exposure. The first eighteen accounts did
+not contain one: every account built scanners, broke into things, or built
+agents. That is a real bias and I only noticed it when I wrote the groups out.
+Entries 19 and 20 were added to correct it — one for the prevention argument
+that my problem should not exist, one for the reason my constraint is
+operational rather than only ethical.
+
+Still absent and worth noting: `@zricethezav`, who wrote gitleaks, a tool named
+in my own precision comparison, and the rest of the secrets-management field
+beyond a single representative. One account is representation, not balance.
+
+The three agent-construction accounts are the furthest from my problem and I am
+not going to pretend otherwise. They earn their place through one specific
+question rather than through the domain: a commenter asked me directly whether
+secret values reach a language model, and my answer — that they do not, because
+the decision layer is an `argmin` over a cost matrix and only extracted features
+cross the boundary — is a claim about agent architecture that the people
+building those frameworks are better placed to challenge than anyone else here.
 
 ## Useful Papers, Articles, Repositories, or Datasets
 
@@ -590,6 +650,84 @@ Updated after choosing OpenAI. Marked by whether they still block anything.
 
 Questions 5 and 6 are the ones I would most like answered before I write the cost model. Neither strictly blocks it — I am estimating everything and reporting a sensitivity analysis regardless — but they would let me sweep a narrower and more defensible range instead of guessing at the whole space.
 
+## The Ten Questions About the Selected Problem
+
+Answered in one place, because they are otherwise scattered across this file and
+the paper. Two of them I had not answered anywhere before writing this section.
+
+**What can the agent observe?** The scanner's finding, and the repository around
+it. Concretely: the file path, the variable or identifier name, the commit
+message, and whether the string matches the published OpenAI project key format.
+It can also buy one thing from outside the repository — `last_used_at` from my
+own organisation's admin API.
+
+**What information is hidden?** Whether the credential still authenticates.
+Nothing in a repository records revocation, because revocation happens at the
+provider. This is the whole problem.
+
+**What will a human observe that the agent cannot?** Three things. Whether a key
+was discussed in a thread or a ticket the agent cannot read. Whether the team
+that owns the repository already knows. And organisational authority — whether
+revoking another team's credential is permitted at all, which is a constraint on
+the action space rather than a fact about the key. My escalation bound covers a
+human acting as a state oracle and says nothing about these.
+
+**What must the agent remember?** Very little in the version I built, and that
+is a limitation rather than a design choice. It decides one finding at a time
+with no memory between findings. The thing it should remember is a registry of
+credentials already rotated, held as salted hashes, because my regret analysis
+shows the five costliest errors are the same error five times — rotating a key
+that was already dead. A memory of past remediations would catch exactly that
+case, and a practitioner independently proposed the same structure.
+
+**When must the agent ask a question?** When buying evidence changes what it
+does. That is the EVSI test, and it fires on about 4% of findings. Uncertainty
+alone is not the trigger — the agent can be very unsure and still have nothing
+worth asking, because a belief far from every boundary cannot be moved across
+one. It escalates to a human when the expected cost of doing so is lowest, which
+under my cost model never happens while a human interruption costs more than
+15.03 minutes.
+
+**Which incorrect action can be corrected?** Rotate-safely and escalate are
+recoverable — you spend time you did not need to spend. Revoke-now is
+recoverable but expensively, because the outage has already happened by the time
+you learn it was unnecessary. Dismiss is the only action that cannot be
+corrected by the agent, because nothing revisits a closed finding; the correction
+arrives as a breach. That asymmetry is why the dismiss-live cell is priced at
+2400 minutes and why the agent, correctly, never reaches it.
+
+**Who has the cost of an incorrect action?** Not the same person for each error,
+and this is the part my cost matrix hides by expressing everything in one unit.
+Over-remediation is paid by the responder and by whichever team gets the deploy
+cycle — engineer-minutes, visible, and internal. Under-remediation is paid by
+the organisation and by whoever sits behind the credential, which for a
+third-party key includes people who are not in my organisation at all. Summing
+both into "engineer-minutes" treats an hour of my time and an hour of somebody
+else's exposure as the same quantity, and it is not. Recorded as a limitation.
+
+**Which evidence changes the belief?** The free features move `fake` sharply and
+`live`-versus-`revoked` not at all: both real states carry identical likelihoods
+on both features, so the ratio stays at 1.778 whatever is observed. Only the
+purchased probe touches the axis the decision turns on. Three further channels
+would, none of which I model: a secret-store hash comparison, provider inventory
+status where the credential format exposes a public identifier, and passive
+usage telemetry.
+
+**Is the historical evidence comparable?** Partly, and I have been careful about
+this. The scanner-precision figure comes from a nine-tool comparison on a
+labelled corpus, which is comparable. The credential-survival figure comes from a
+vendor retest of a four-year-old cohort, which is a different population from
+freshly flagged findings, so combining the two into one prior mixes sources that
+were not measuring the same thing. That is why the prior is swept rather than
+asserted.
+
+**How does the agent learn after an action?** In the built version, it does not.
+The feedback loop is specified — the outcome of a remediation is observable and
+would update the likelihood tables — but nothing implements it, and the
+one-shot formulation is the honest ceiling on this project. A sequential version
+would find value the current model cannot see, and the rotation that silently
+fails on an undocumented consumer is the case that most needs it.
+
 ## AI Prompts and Important AI Errors
 
 Where an error changed a published number, I say which.
@@ -604,6 +742,10 @@ Where an error changed a published number, I say which.
 | 4 | Work one finding end to end, price the probe before buying it | Produced the §10 decision record. EVSI came out at exactly 0.00, which I did not expect |
 | 5 | Review this preprint as a hostile IJCAI reviewer | Four models, four reviews, one verdict of reject. Logged in `review-record.md` |
 | 6 | Sample the whole cost model jointly rather than one axis at a time | Produced the robustness analysis, and a sampler bug I did not catch until a fifth review read the code (entry 7) |
+| 7 | Verify the author list on every reference against the primary source before I submit anything | Found two fabricated author lists in my own bibliography (entry 11). The most productive single prompt in the project per minute spent |
+| 8 | My problem statement says *ignore, verify, remove* and my agent has five actions. Are these the same problem? | Started three rounds of argument that nearly made me rebuild the model. The answer was a relabel and a mapping table, not a rebuild (entry 13) |
+| 9 | Rebuild this decision model from scratch with every parameter traced to a published source, and mark the ones that cannot be | Produced an independent parameterisation in dollars rather than engineer-minutes. Its indifference point is 0.079%; my unreachable-dismiss boundary is 0.15%. Two different models, same conclusion — the strongest external check the project has had |
+| 10 | My posterior assumes the two free features are conditionally independent. Test what happens when they are not | Produced the shrinkage sweep. The invariance survives at every weight; the *fake* collapse does not (entry 14) |
 
 ### AI Errors
 
@@ -619,6 +761,14 @@ Where an error changed a published number, I say which.
 | 8 | Monte Carlo output | `json.dump(..., open("../results/...", "w"))` | Relative to the working directory, not the script. Crashed when run from the repository root | Anchored to the script's own directory with `makedirs` |
 | 9 | An extension suggested by a reviewer | "Probe which systems consume the credential — it may pay off even when the state is certain" | Plausible and wrong. The consumer hunt appears identically in both remediation actions, so it cannot choose between them | Tested and refuted. The boundary is invariant at 0.06588 for every value of the hunt from 30 to 480 minutes. Recorded as a result |
 | 10 | A reviewer's domain claim | "GitHub's validity checks make your premise false — the scanner tells you if the key is live" | Half right. GitHub does run validity checks, but its own pattern table marks OpenAI API Key as a partner pattern **without** validity-check support | Rejected on the facts, and the check now appears in §2 as a citation defending the premise. The same reply's *other* point — that OpenAI being a partner means public-repo leaks get reported and revoked — was accepted |
+| 11 | Building the bibliography | Two reference entries with confident, complete, wrong author lists: the ESEM secret-detection study attributed to Lorenzo Neil, and arXiv:2504.18784 attributed to an invented "Islam, Md. Nazmul" | The first copied the author list from a *different* paper by the same first author. The second was fabricated outright. Both looked exactly like the correct entries around them | Verified every entry against arXiv. Cox for the first, Rahman et al. for the second. The lesson is that a citation is the easiest thing for a model to invent and the hardest for a reader to check |
+| 12 | Compiling the bibliography | Editorial reminders left in `note` fields — "Verify author list before submission" — printed inside the reference list in the PDF | `named.bst` renders `note`. The reminder about checking my references was itself published as a reference | Moved to `%` comments. Caught by reading the compiled PDF rather than the source |
+| 13 | Reframing to the problem statement | "Your hidden state is wrong. *Possible secret* means the state is real-versus-placeholder; collapse live and revoked and rebuild" | Read one word of the problem statement and ignored the one next to it. *Verify* sits in the same action list and only makes sense against a state the free evidence cannot settle. A second model, reading the paper cold, took *verify* to mean exactly my live/revoked probe | Reversed. The model was never wrong; what was missing was a sentence mapping my five actions onto the three. **Nearly cost a rebuild of a working model on the strength of a misread.** |
+| 14 | Testing conditional independence | Nothing — this is an error the *test* found in my own published number | My §4.3 reports *fake* collapsing from 0.25 to 0.011 under the naive independent product. The two features are correlated: a `tests/fixtures/` path and a placeholder-looking name are close to one observation counted twice | **Changed how a published number is stated.** A 20% shrinkage doubles it to 0.022 and a 50% shrinkage gives 0.058. The 0.011 is now reported as the favourable end of a range. The live/revoked invariance is untouched at every weight, because it comes from two rows being equal rather than from independence |
+| 15 | A review of my robustness table | "The policy ordering P2 < P0 < P1 < baseline is robust across 98.64% of joint perturbations" | 98.64% is real but belongs to a single pairwise claim — P2 beating the baseline under sweep B. The compound ordering is limited by its weakest link, P0 beating the baseline at 79.20%, and P1 was never in that sweep at all | Rejected before it reached the paper. A correct number attached to the wrong claim is harder to catch than a wrong number, because checking the figure against the results file confirms it |
+| 16 | Three separate review outputs | Repeated proposals to classify the key by whether the provider returns 403 rather than 401, framed as passive metadata | That requires sending the found credential to the provider. It is the one thing the paper forbids, and one of the same models had criticised a different answer for proposing it two messages earlier | Rejected each time. Also corrected the reasoning: a zero-scope key does not shift the belief, it lowers the breach cost — a cost-matrix change, not evidence. Recorded because a constraint stated in the abstract was violated three times by models that had read the abstract |
+| 17 | Checking someone else's review | "The cost matrix has 12 cells built from 8 components, not 15 and 9" | My own paper says fifteen and nine and my own paper is right: the table includes the investigate row, and the consumer hunt is priced twice, documented and undocumented. The count came from the code's `K` dictionary rather than from the paper | The review being corrected was right and the correction was wrong. Logged because it is the failure mode of checking a claim against the nearest artefact instead of the one the claim was about |
+| 18 | Writing `shrinkage.py` | `OUT = os.path.join(HERE, "results")` | The same class of bug as entry 8, eight rounds later. Every other script writes to `HERE/../results`; this one would have written to `experiments/results/` once it was in the repository, and worked in the flat scratch directory purely by accident | Fixed to match the existing convention. Caught by a full file audit rather than by running it |
 
 **What I take from this table.** Four of the ten changed a published number, and
 three of those four were found by an AI reviewing another AI's work rather than

@@ -56,15 +56,57 @@ The second half is the part I care about. A rule that wins under every assumptio
 |---|---|
 | §3 problem statement | **Done** — stated above and in `research-file.md` |
 | §4 research file | **Done** — terms, queries, sources, questions, and the AI prompt/error tables. The X accounts table is candidates only |
-| §5 Reddit discussions | **Partly done** — two threads, eight substantive replies, two of which changed a number. Against a target of ten contributions across five communities |
+| §5 Reddit discussions | **Partly done** — three threads across two communities, roughly sixteen substantive replies, four of which changed something. Against a target of ten contributions across five communities. The weakest deliverable |
 | §6 X discussions | **Not started** |
-| §7 discussion record | **Partly done** — both threads logged in full with their design consequences. Bounded by §5 |
+| §7 discussion record | **Partly done** — all three threads logged in full with their design consequences. Bounded by §5 |
 | §8 agent design | **Done** — all seven parts settled and implemented in `experiments/run_experiment.py` |
-| §9 experiment | **Done** — five policies against the baseline on forty frozen cases, five one-at-a-time sweeps, a five-error regret analysis, a probe-price sweep, and a 40,000-draw joint sensitivity study. Results in `results/` |
+| §9 experiment | **Done** — five policies against the baseline on forty frozen cases, five one-at-a-time sweeps, a five-error regret analysis, a probe-price sweep, a consumer-hunt invariance test, a correlation-shrinkage sweep, and a 40,000-draw joint sensitivity study. Results in `results/` |
 | §10 probability decision record | **Done** — one finding worked end to end in `decisions/` |
-| §11 AI reviews | **Done** — four independent reviews with accept/reject and evidence in `review-record.md`, including two claims tested and rejected |
-| §13 preprint | **Drafted** — `paper/preprint.md`, revised against all four reviews. Not yet in LaTeX |
-| §14 publication | **Not started** |
+| §11 AI reviews | **Done** — four independent reviews of the draft, then three later rounds against the compiled paper, each comment accepted or rejected with evidence in `review-record.md`. Three claims tested and rejected; three review-supplied numbers found wrong |
+| §13 preprint | **Done** — `paper/main.tex` and `paper/main.pdf`, IJCAI-ECAI 26 format, nine pages, compiling clean. `paper/preprint.md` is kept as the markdown source of the same argument |
+| §14 publication | **Attempted, rejected.** Submitted and returned as basic and not research-worthy. The verdict and my reading of it are in `review-record.md`. No venue chosen yet |
+
+## Repeating the test
+
+Python 3.9 or later. No third-party packages for the experiments; the figures
+need `matplotlib`.
+
+```bash
+cd experiments
+
+python run_experiment.py    # the agent, six policies, five one-at-a-time
+                            # sweeps. Rewrites results/summary.json and,
+                            # if data/cases.json is absent, regenerates the
+                            # forty cases from seed 20260827
+python errors.py            # regret analysis over the frozen cases
+                            # -> results/error-analysis.md, results/errors.json
+python probe_sweep.py       # what the probe price buys
+python consumer_probe.py    # boundary invariance under the consumer-hunt cost
+python shrinkage.py         # what survives a correlation correction
+                            # -> results/shrinkage.md, results/shrinkage.json
+python monte_carlo.py       # 40,000-draw joint sensitivity, about a minute
+                            # -> results/robustness.md, results/robustness.json
+```
+
+`data/cases.json` is committed and is not regenerated while it exists. Delete it
+only if you intend to change the frozen case set, because every realised-cost
+number in the paper is measured on exactly those forty cases. The expected costs
+are closed-form over all 54 possible worlds and do not depend on the file.
+
+Every script is deterministic. `monte_carlo.py` fixes seed 20260828 and
+`run_experiment.py` fixes 20260821, so a clean checkout reproduces every number
+in `results/` and in the paper exactly.
+
+The paper builds with:
+
+```bash
+cd paper
+pdflatex main && bibtex main && pdflatex main && pdflatex main
+```
+
+`ijcai26.sty` and `named.bst` come from the official IJCAI author kit and are
+gitignored rather than redistributed. Figures are rebuilt with
+`python figures/make_figures.py`.
 
 ## What is in here
 
@@ -78,11 +120,15 @@ The second half is the part I care about. A rule that wins under every assumptio
 | `experiments/run_experiment.py` | The agent and the policy comparison |
 | `experiments/errors.py` | Regret analysis over the frozen cases |
 | `experiments/probe_sweep.py` | Where buying evidence starts to pay |
+| `experiments/consumer_probe.py` | Why probing which systems use the key cannot help: the hunt cost appears identically in both remediation actions, so the boundary is invariant |
+| `experiments/shrinkage.py` | What survives when the two free features are treated as correlated rather than independent |
 | `experiments/monte_carlo.py` | Joint sensitivity over the whole cost and evidence model |
 | `results/findings.md` | What the experiment said |
 | `results/error-analysis.md` | Five incorrect decisions, examined |
 | `results/robustness.md` | Which conclusions survive when everything is wrong at once |
-| `paper/preprint.md` | The draft preprint |
+| `results/shrinkage.md` | The invariance survives any dependence correction; the *fake* collapse does not |
+| `paper/main.tex`, `paper/main.pdf` | The preprint, IJCAI-ECAI 26 format |
+| `paper/preprint.md` | The same argument in markdown |
 | `paper/limitations.md` | The long-form limitations |
 | `data/cases.json` | Forty frozen cases, written once and never regenerated |
 
@@ -104,3 +150,25 @@ justification I have for the scope I chose.
 Every cost number except the probe is still my own estimate. That is why the
 project ends in a 40,000-draw sensitivity study rather than a point estimate,
 and why the conclusions I keep are about ordering rather than magnitude.
+
+**The paper was submitted and rejected**, as basic and not research-worthy. I
+think that verdict is right and I am not going to soften it here. Every input is
+an estimate, the machinery is Raiffa and Schlaifer, and my own related-work
+paragraph says the contribution is the instance rather than the method. A
+sensitivity study shows that the conclusions survive the parameters moving; it
+cannot show that the parameters were ever right.
+
+Two things point at the version of this that would be research. A practitioner
+observed that credentials which expose a public identifier — an AWS `AKIA`
+access key ID, a Stripe `sk_test_` prefix, a JWT's `exp` claim — let you read
+liveness straight off your own admin API, which means the problem I chose is a
+property of credential formats that hide the identifier rather than of secret
+scanning. And an independent reparameterisation of the model in dollars, with
+every figure sourced, reached the same conclusion mine did about ignore being
+unreachable, while naming the one number nobody has published: the share of real
+secrets that are production secrets. That is small, checkable, and measurable
+from a dataset that exists.
+
+Neither is in the paper yet. Both are recorded in `review-record.md` and
+`discussion-record.md` so the next version starts from them rather than from
+where this one stopped.

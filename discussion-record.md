@@ -8,6 +8,7 @@ Every public contribution, and what it changed. A link on its own does not count
 |----------|---------------------|------|-----------------------|-------------|----------------|---------------|
 | Reddit | r/sysadmin | https://www.reddit.com/r/sysadmin/comments/1vqomq7/secretscanner_triage/ | Asked whether rotating a credential has ever actually broken something, and roughly what it cost | Yes — and it was always a key nobody had documented as live. Also: do not tune the ratio, verify the key instead; and log which consumer last used the credential | Not yet replied | Adding last-consumer telemetry as a candidate piece of evidence; adding a question about whether that evidence is obtainable at all |
 | Reddit | r/devops | https://www.reddit.com/r/devops/comments/1vzk0v2/cost_of_rotating_a_revoked_key/ | Asked how long it takes to realise a credential you started rotating was already dead or never real | Seven replies. Minutes for revoked, minutes for never-real, hours for an abandoned project. Timebox at 10–15 minutes then verify. Two critiques of what is worth automating. A PKI answer showing live-versus-revoked is solved for certificates and unsolved for API keys. Then three more: why the hour happens, why one probe response cannot be trusted, and a rotation that silently did not take | Not yet replied | Wasted-rotation cost bounded rather than swept; timeboxing recorded as a policy I do not have; the automation critique folded into limitations; my by-product-observation assumption withdrawn; a fourth state added as open |
+| Reddit | r/devops | https://www.reddit.com/r/devops/comments/1w4c1cl/im_struggling_with_the_evidence_side_of_secret/ | Asked what people actually check before deciding what to do with a flagged key, and specifically what evidence is available without authenticating with the discovered key | Eight people, 14 comments, 7.9K views. One states my constraint as a flat rule and gives a reason I did not have. One questions whether the production/non-production split earns its place at all. One proposes a hash map of deployed credentials as dispositive evidence. One asks whether I am sending secrets to a language model. Three answer a triage question with prevention. One describes a convention that deliberately puts encoded credentials in the repository | Replied to the hash-map suggestion twice and to the production-key question; the rest not yet answered | The refusal to test the key restated as contested rather than mine alone; liveness demoted from deciding the action to setting the urgency; secret-store hash comparison added as a candidate evidence channel; the secret-handling boundary written down as a design property; prevention recorded as the field's first instinct and as a limit on what my problem is worth solving; my well-formedness likelihood challenged by an organisational convention I had not considered |
 
 ---
 
@@ -196,6 +197,104 @@ Their IAM returns the service, the region *and* the date for each key. OpenAI's 
 
 And what actually broke production was not the key they rotated. It was a second key nobody had written down. My agent takes one finding at a time and assumes the finding is the thing that matters. This is the second time navlio has described the same failure: the confirmation step told them everything was fine, and it was not.
 
+## Reddit, r/devops — the evidence side
+
+https://www.reddit.com/r/devops/comments/1w4c1cl/im_struggling_with_the_evidence_side_of_secret/
+
+**What I asked.** This is question 4 from the queue below, rewritten in my current framing. I described the evidence I actually use — repo context, key format, git history, reachability, deployment context, and `last_used_at` from the provider's admin API — said that most of it tells me whether the string is a real secret and almost nothing about whether it still works, and asked what people check before deciding. I said explicitly that I was after evidence obtainable without authenticating with the discovered key.
+
+Eight people replied across 14 comments, on 7.9K views and zero upvotes — worth noting that the post did badly as a post and well as a question. Four replies changed something.
+
+### The reply that overturned a sentence in my paper
+
+> Never use the discovered key to prove it is live. That is how you turn a leak into a login.
+>
+> Keep a hash of known secrets from your vault sync or CI and compare hashes.
+>
+> Provider admin metadata like `last_used_at` is fine when it does not require presenting the key.
+>
+> If path and format say it is real, rotate. Still-live is a nice-to-have after quarantine.
+
+Three practitioners have now told me to just try the key. This is the first who states the opposite as a rule, and gives a reason I did not have: authenticating with a found credential is itself the act of using it. My limitations section said the refusal was mine alone and that the field did not share it. That was written on a sample of three and it is not true as stated. The position is contested, not idiosyncratic, and I have changed the sentence.
+
+**"Still-live is a nice-to-have after quarantine"** is the sharper half. I had been treating liveness as the thing that selects the action. This says it sets the urgency of what follows an action you have already taken. What makes it worth recording rather than merely agreeing with is that my own cost matrix already implies it — dismiss requires *P*(live) below 0.0015 and I showed that belief is unreachable, so the model has been saying "always remediate, use evidence to choose which" the whole time and I had filed that as a curiosity in a figure caption. Somebody who has never seen my numbers reached the same conclusion from experience.
+
+### The reply that questions my state space
+
+> Question for you: why does it matter whether or not it's a production key? The exposure of *any* key brings up the possibility that there is a workflow problem that needs to be addressed.
+
+The most upvoted comment in the thread, and the one I am least sure how to answer. It is not a question about evidence at all — it asks whether one of my hidden state's two axes earns its place.
+
+What I think is true: the workflow problem is identical either way and he is right that it needs fixing regardless. Where production versus non-production earns its place in my model is the cost of the remediation, not the decision to remediate. Rotating a production key means hunting consumers and a deploy cycle; rotating a test key is close to free. So the axis changes *which* remediation and how fast, not *whether* I act.
+
+I am recording that as my answer rather than as a settled point. It is a defence of the cost matrix, and it does not address his actual claim, which is that the finding should trigger a process change and my agent models none.
+
+I replied saying roughly this, and conceded the part I think he is right about: in a real incident the consumer hunt and the deploy cycle probably cost more than the outage they are avoiding, which is a statement about my own cost components that I had not made out loud.
+
+### The hash-map suggestion
+
+> Could you create a hash map of the canonical key name to the hashed value? Hash map is created or updated as soon as the key to the system is applied so it is always in sync. Then have your agent test the hashes.
+
+I asked what happens when the key is not in the map, and got a fuller answer: the map is authoritative by construction, kept in sync either through CI at deploy time or, cloud-natively, through an event trigger on the secret store that updates the map whenever a value changes.
+
+This is a real candidate and it belongs in my evidence model as a new channel: compare a hash of the discovered value against the current stored value. When it hits, it is dispositive rather than probabilistic, and it does not require presenting the key anywhere.
+
+**Where I think it is over-claimed.** "Not in the map, therefore not live" only holds if every credential in use was provisioned through that pipeline. A key created by hand in a console, or one that predates the system, is absent from the map and may still authenticate. So absence reads as *unknown* to me and not as *dead*, unless provisioning is enforced as the only path. I have asked him whether that is a real problem in practice or whether the enforcement is tight enough that it stops mattering.
+
+### The reply I should have anticipated
+
+> (And by agent, we aren't sending secret api keys to an LLM, right? right?)
+
+The answer is no, and it is no by construction rather than by policy: my agent has no language model in it, the decision layer is an `argmin` over a cost matrix, my evidence set is three features rather than the string, and the repository contains no credential material at all. But nowhere in the paper had I said so. The question is the reason I now state the secret-handling boundary as a design property — the string is consumed by feature extraction and only the extracted features cross into the decision layer — and the reason I can make the point that a cost-matrix decision layer is a smaller secret-handling surface than a language model one.
+
+### Three people answered a triage question with prevention
+
+This was the largest single group in the thread and I did not expect it.
+
+> The most common mistake/leak I've seen is that people commit the `.env` file. Setting up gitignore is a must, and preferably local dev env set up that does not need a handwritten `.env` file but rather programmatically builds such from the local secret store like Keychain Access or 1Password. — greyeye77
+
+> Better to remove the leaks in the first place. Use a credential broker so only placeholders are injected and replaced over the wire. — theozero, who disclosed being the creator of one such tool
+
+> Short lived credentials are great for this, and there are many credential broker products on the market. If that's too much set up, the least you can do is encrypt your `.env` files. — cvince
+
+Two of the three name commercial products, so I am discounting them accordingly. What survives the discount is that none of the three engaged with the triage question at all. Asked what evidence to gather about a leaked key, their answer was that the key should not have been leakable.
+
+**Why this matters to me rather than being an evasion.** Short-lived credentials are the strongest version of the argument, and they do not merely prevent the leak — they dissolve my hidden state. A credential that expires in an hour is *revoked* by the time anyone triages it, deterministically and without a probe. My whole decision problem is a consequence of long-lived credentials being the norm, and the field's direction of travel is away from that.
+
+I am not changing the model. I am recording that the problem I chose is downstream of a failure the field would rather fix upstream, and that my baseline assumption — the finding exists and something must be decided about it — is an assumption practitioners do not automatically grant. That belongs in my limitations, stated in their words rather than mine.
+
+greyeye77 also mentioned, in passing, that language-model review of pull requests is now common for finding secrets and is better than maintaining a thousand-line regex. I note that alongside MissiveFinding6111's question below, because the two sit oddly together: one person worries about a model seeing credentials, another reports that models already read the diffs.
+
+### The convention that breaks my well-formedness feature
+
+> I store base encoded creds in my repo for Jenkins, and have a sync established with Jenkins, so creds can get refreshed. Now I store the key in this format: `{base_encoded_value}`. Maybe find some other similar formats, which are non threatening? — CallofDutyReznov454
+
+This describes an organisation that deliberately commits credentials to the repository, in an encoded form, with a sync that refreshes them. It is not a leak. It is a convention.
+
+It is a problem for my model, and specifically for the well-formedness likelihood. That feature assumes the format tells you something: a string matching the published OpenAI key structure is very likely real, and a malformed one is likely fake. A convention that stores real credentials base-encoded produces strings that fail the format check and are entirely live. It inverts the feature rather than weakening it.
+
+I do not think this changes my numbers, because I scoped to OpenAI project keys and I have no reason to think this convention is common there. But it is a concrete example of the thing my Section 4.3 caveat was gesturing at vaguely — that my invariance is a property of the two features I chose, in the environments I imagined — and it is worth a sentence, because it is the first time anyone has described a *specific* environment where a feature I rely on would read backwards.
+
+### Design changes
+
+- **A change to the agent's stated scope.** The refusal to authenticate is contested rather than mine alone, with a second and non-moral reason: it converts a leak into a login and can trip a deliberately planted honeytoken.
+- **A new failure condition.** An organisational convention that stores encoded credentials in the repository inverts the well-formedness feature rather than merely weakening it.
+- **A limit on the problem, not a change to it.** Short-lived credentials dissolve the hidden state. The problem I chose exists because long-lived credentials do.
+- **A change to the probability model's interpretation.** Liveness sets urgency, not action. The unreachability of dismiss stops being a curiosity and becomes the model's one point of agreement with practice that I did not tune it to reach.
+- **A new piece of evidence.** Secret-store hash comparison. Dispositive when it hits; absence is uninformative rather than favourable.
+- **No change, with the reason.** Nothing in the architecture changes for the language-model question. The property was already there and unstated.
+
+### To verify
+
+- Whether an organisation that keeps a provisioning hash map can actually guarantee no credential is created outside it, or whether the unknown branch is permanent.
+- Whether a rotation triggered by a workflow problem — PaleoSpeedwagon's point — belongs as a fifth action or sits outside the decision entirely.
+- How common the encode-and-commit convention is, and whether any provider's published guidance sanctions it. If it is rare, it is a footnote; if it is normal anywhere, my well-formedness row is wrong for that population.
+- What share of credentials in circulation are already short-lived. If that share is rising quickly, the honest framing of this work is a problem with a shrinking domain.
+
+### Still owed
+
+Replies to Fantastic-Mr-Default, MissiveFinding6111, CallofDutyReznov454, greyeye77, theozero and cvince. Six of the eight people who answered have had nothing back from me, and two of those gave me the most useful comments in the thread.
+
 ## Questions queued to ask
 
 Written after settling on OpenAI, so these are in my current framing — three states, five actions — rather than the wording I used in my first post.
@@ -205,7 +304,7 @@ Written after settling on OpenAI, so these are in my current framing — three s
 | 1 | Revoke now, or find the consumers first and rotate cleanly? What decides it? | r/sysadmin, r/devops | **Prices two of my five actions.** Highest value question I have |
 | 2 | ~~Is "the key had an undocumented consumer" knowable before you rotate, or only after it breaks?~~ | — | **Answered by navlio.** Neither — it takes telemetry set up beforehand. Not evidence my agent can use |
 | 3 | What is the state I am missing? | r/devsecops, r/AskNetsec | **Partly answered by Alvasilev.** A key that authenticates but is authorised for nothing — 403, not 401. Still worth asking, because I want to know whether anyone treats it as a separate case in practice |
-| 4 | When a scanner flags a key in your repo, what do you actually do first — the real procedure, not the ideal one | r/devsecops | Validates my baseline. I asked a version of this already but in older wording, so the answer addressed a different question |
+| 4 | ~~When a scanner flags a key in your repo, what do you actually do first — the real procedure, not the ideal one~~ | — | **Asked and answered** in the evidence thread above. The real procedure is quarantine first and establish liveness afterwards, which is not the ordering my agent assumes |
 | 5 | If a triage tool handed back half its findings for a human to check, would you still run it? | r/devsecops | Sets the escalation rate above which the agent has not automated anything |
 
 Drafts, to be rewritten in my own words before posting:
