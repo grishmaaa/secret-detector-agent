@@ -1,0 +1,151 @@
+{
+  "prior": {
+    "live": 0.48,
+    "revoked": 0.27,
+    "fake": 0.25
+  },
+  "sources": [
+    {
+      "key": "context",
+      "label": "Repository context (path, name, commit message)",
+      "cost": 0.0,
+      "time": "seconds, automated",
+      "wrong": "A production-looking path around a fixture, or a fixture path in a repository that deploys from tests",
+      "eig": 0.29087903758570044,
+      "eig_axis": 0.0,
+      "evsi": 0.0,
+      "base_action": "rotate",
+      "actions": [
+        "rotate"
+      ],
+      "changes_action": false,
+      "bits_per_min": null,
+      "value_ratio": null
+    },
+    {
+      "key": "form",
+      "label": "Well-formedness (format match)",
+      "cost": 0.0,
+      "time": "milliseconds, regex",
+      "wrong": "An organisation that commits base-encoded real credentials by convention inverts this feature rather than weakening it",
+      "eig": 0.3249625731421715,
+      "eig_axis": 0.0,
+      "evsi": 1.2696000000000112,
+      "base_action": "rotate",
+      "actions": [
+        "revoke",
+        "rotate"
+      ],
+      "changes_action": true,
+      "bits_per_min": null,
+      "value_ratio": null
+    },
+    {
+      "key": "probe",
+      "label": "Probe: last_used_at from our own admin API",
+      "cost": 3.0,
+      "time": "one API call plus the engineer around it",
+      "wrong": "A live key that has been idle for months looks like a dead one; the field is silence, and silence is not death",
+      "eig": 0.605131539299073,
+      "eig_axis": 0.3357719237109391,
+      "evsi": 0.0,
+      "base_action": "rotate",
+      "actions": [
+        "rotate"
+      ],
+      "changes_action": false,
+      "bits_per_min": 0.201710513099691,
+      "value_ratio": 0.0
+    }
+  ],
+  "probe_by_belief": [
+    {
+      "context": "placeholder",
+      "form": "well-formed",
+      "p": 0.14425,
+      "h": 1.4846023502164756,
+      "eig": 0.6563883997040351,
+      "evsi": 0.0,
+      "base_action": "rotate",
+      "actions": [
+        "rotate"
+      ],
+      "changes_action": false,
+      "buy": false
+    },
+    {
+      "context": "placeholder",
+      "form": "malformed",
+      "p": 0.10575,
+      "h": 0.06751632273184455,
+      "eig": 0.0229639844421147,
+      "evsi": 1.4012368794326244,
+      "base_action": "revoke",
+      "actions": [
+        "dismiss",
+        "revoke",
+        "rotate"
+      ],
+      "changes_action": true,
+      "buy": false
+    },
+    {
+      "context": "neutral",
+      "form": "well-formed",
+      "p": 0.24775,
+      "h": 1.31942659317351,
+      "eig": 0.47470961968441294,
+      "evsi": 0.0,
+      "base_action": "rotate",
+      "actions": [
+        "rotate"
+      ],
+      "changes_action": false,
+      "buy": false
+    },
+    {
+      "context": "neutral",
+      "form": "malformed",
+      "p": 0.03975,
+      "h": 0.36717238997577994,
+      "eig": 0.15887896983350808,
+      "evsi": 5.211849056603771,
+      "base_action": "revoke",
+      "actions": [
+        "revoke",
+        "rotate"
+      ],
+      "changes_action": true,
+      "buy": true
+    },
+    {
+      "context": "production",
+      "form": "well-formed",
+      "p": 0.4505,
+      "h": 1.0202129472028143,
+      "eig": 0.3533619297513432,
+      "evsi": 0.0,
+      "base_action": "rotate",
+      "actions": [
+        "rotate"
+      ],
+      "changes_action": false,
+      "buy": false
+    },
+    {
+      "context": "production",
+      "form": "malformed",
+      "p": 0.012,
+      "h": 1.3079401988957746,
+      "eig": 0.5997854520002908,
+      "evsi": 0.0,
+      "base_action": "rotate",
+      "actions": [
+        "rotate"
+      ],
+      "changes_action": false,
+      "buy": false
+    }
+  ],
+  "probe_price": 3
+}
