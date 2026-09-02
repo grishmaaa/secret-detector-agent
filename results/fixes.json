@@ -1,0 +1,329 @@
+{
+  "p_exploit": 0.1,
+  "ceiling": 400,
+  "sweep": [
+    {
+      "p": 1.0,
+      "dismiss_live": 2400.0,
+      "segments": [
+        [
+          "revoke",
+          0.0,
+          0.06616
+        ],
+        [
+          "rotate",
+          0.06616,
+          0.64
+        ]
+      ]
+    },
+    {
+      "p": 0.5,
+      "dismiss_live": 1202.5,
+      "segments": [
+        [
+          "dismiss",
+          0.0,
+          0.000715
+        ],
+        [
+          "revoke",
+          0.000715,
+          0.06616
+        ],
+        [
+          "rotate",
+          0.06616,
+          0.64
+        ]
+      ]
+    },
+    {
+      "p": 0.25,
+      "dismiss_live": 603.75,
+      "segments": [
+        [
+          "dismiss",
+          0.0,
+          0.007705
+        ],
+        [
+          "revoke",
+          0.007705,
+          0.06616
+        ],
+        [
+          "rotate",
+          0.06616,
+          0.64
+        ]
+      ]
+    },
+    {
+      "p": 0.1,
+      "dismiss_live": 244.5,
+      "segments": [
+        [
+          "dismiss",
+          0.0,
+          0.124725
+        ],
+        [
+          "rotate",
+          0.124725,
+          0.64
+        ]
+      ]
+    },
+    {
+      "p": 0.05,
+      "dismiss_live": 124.75,
+      "segments": [
+        [
+          "dismiss",
+          0.0,
+          0.64
+        ]
+      ]
+    },
+    {
+      "p": 0.03,
+      "dismiss_live": 76.85,
+      "segments": [
+        [
+          "dismiss",
+          0.0,
+          0.64
+        ]
+      ]
+    },
+    {
+      "p": 0.01,
+      "dismiss_live": 28.95,
+      "segments": [
+        [
+          "dismiss",
+          0.0,
+          0.64
+        ]
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "P2 (Week 2, as built)",
+      "per_class": {
+        "live": 1.0,
+        "revoked": 0.0,
+        "fake": 0.0,
+        "zero_scope": 0.0,
+        "other": 0.5
+      },
+      "actions": {
+        "live": {
+          "rotate": 213
+        },
+        "revoked": {
+          "rotate": 128,
+          "revoke": 1
+        },
+        "fake": {
+          "revoke": 75,
+          "rotate": 56
+        },
+        "zero_scope": {
+          "rotate": 21
+        },
+        "other": {
+          "rotate": 3,
+          "revoke": 3
+        }
+      },
+      "counts": {
+        "live": 213,
+        "revoked": 129,
+        "fake": 131,
+        "zero_scope": 21,
+        "other": 6
+      },
+      "overall": 0.432,
+      "balanced": 0.3,
+      "cost": 60.45,
+      "human_rate": 0.0
+    },
+    {
+      "name": "P3 (Week 2, as built)",
+      "per_class": {
+        "live": 1.0,
+        "revoked": 0.0,
+        "fake": 0.0,
+        "zero_scope": 0.0,
+        "other": 0.8333333333333334
+      },
+      "actions": {
+        "live": {
+          "rotate": 213
+        },
+        "revoked": {
+          "rotate": 129
+        },
+        "fake": {
+          "revoke": 74,
+          "rotate": 57
+        },
+        "zero_scope": {
+          "rotate": 21
+        },
+        "other": {
+          "rotate": 5,
+          "revoke": 1
+        }
+      },
+      "counts": {
+        "live": 213,
+        "revoked": 129,
+        "fake": 131,
+        "zero_scope": 21,
+        "other": 6
+      },
+      "overall": 0.436,
+      "balanced": 0.3666666666666667,
+      "cost": 60.516,
+      "human_rate": 0.0
+    },
+    {
+      "name": "P5 fix 1 only",
+      "per_class": {
+        "live": 1.0,
+        "revoked": 0.007751937984496124,
+        "fake": 0.5877862595419847,
+        "zero_scope": 0.0,
+        "other": 0.3333333333333333
+      },
+      "actions": {
+        "live": {
+          "rotate": 213
+        },
+        "revoked": {
+          "rotate": 128,
+          "dismiss": 1
+        },
+        "fake": {
+          "dismiss": 77,
+          "rotate": 54
+        },
+        "zero_scope": {
+          "rotate": 21
+        },
+        "other": {
+          "rotate": 2,
+          "dismiss": 4
+        }
+      },
+      "counts": {
+        "live": 213,
+        "revoked": 129,
+        "fake": 131,
+        "zero_scope": 21,
+        "other": 6
+      },
+      "overall": 0.586,
+      "balanced": 0.38577430617196284,
+      "cost": 59.853,
+      "human_rate": 0.0
+    },
+    {
+      "name": "P5 fix 1 + escalation rule",
+      "per_class": {
+        "live": 0.9953051643192489,
+        "revoked": 0.007751937984496124,
+        "fake": 0.5725190839694656,
+        "zero_scope": 0.0,
+        "other": 0.3333333333333333
+      },
+      "actions": {
+        "live": {
+          "rotate": 212,
+          "escalate": 1
+        },
+        "revoked": {
+          "rotate": 127,
+          "dismiss": 1,
+          "escalate": 1
+        },
+        "fake": {
+          "dismiss": 75,
+          "rotate": 54,
+          "escalate": 2
+        },
+        "zero_scope": {
+          "rotate": 21
+        },
+        "other": {
+          "rotate": 2,
+          "dismiss": 3,
+          "escalate": 1
+        }
+      },
+      "counts": {
+        "live": 213,
+        "revoked": 129,
+        "fake": 131,
+        "zero_scope": 21,
+        "other": 6
+      },
+      "overall": 0.58,
+      "balanced": 0.38178190392130873,
+      "cost": 60.06625,
+      "human_rate": 0.01
+    },
+    {
+      "name": "P6 all three fixes + scope",
+      "per_class": {
+        "live": 0.9859154929577465,
+        "revoked": 0.10852713178294573,
+        "fake": 0.9541984732824428,
+        "zero_scope": 0.2857142857142857,
+        "other": 0.0
+      },
+      "actions": {
+        "live": {
+          "rotate": 210,
+          "escalate": 2,
+          "dismiss": 1
+        },
+        "revoked": {
+          "rotate": 113,
+          "dismiss": 14,
+          "escalate": 2
+        },
+        "fake": {
+          "dismiss": 125,
+          "rotate": 3,
+          "escalate": 3
+        },
+        "zero_scope": {
+          "escalate": 2,
+          "dismiss": 6,
+          "rotate": 13
+        },
+        "other": {
+          "escalate": 3,
+          "dismiss": 3
+        }
+      },
+      "counts": {
+        "live": 213,
+        "revoked": 129,
+        "fake": 131,
+        "zero_scope": 21,
+        "other": 6
+      },
+      "overall": 0.71,
+      "balanced": 0.46687107674748407,
+      "cost": 59.10525,
+      "human_rate": 0.024
+    }
+  ]
+}
