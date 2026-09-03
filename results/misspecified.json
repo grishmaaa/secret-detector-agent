@@ -1,0 +1,117 @@
+{
+  "baseline": 8.4265,
+  "seeds": 12,
+  "n": 500,
+  "rows": [
+    {
+      "mode": "drift",
+      "strength": 200,
+      "ours": 8.639,
+      "knows": 8.681125,
+      "gap": 0.014624999999999666,
+      "worst_gap": 2.2344999999999997,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "drift",
+      "strength": 50,
+      "ours": 8.772625000000001,
+      "knows": 8.52975,
+      "gap": 0.19849999999999923,
+      "worst_gap": 2.4307499999999997,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "drift",
+      "strength": 20,
+      "ours": 8.232875,
+      "knows": 7.192875,
+      "gap": 0.6596249999999997,
+      "worst_gap": 2.939,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "drift",
+      "strength": 8,
+      "ours": 8.438125,
+      "knows": 7.511,
+      "gap": 1.2017500000000005,
+      "worst_gap": 4.6655,
+      "scope_helps": 0.9166666666666666,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "prior",
+      "strength": 200,
+      "ours": 7.9548749999999995,
+      "knows": 7.8626249999999995,
+      "gap": 0.26999999999999913,
+      "worst_gap": 2.1152500000000005,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "prior",
+      "strength": 50,
+      "ours": 7.05425,
+      "knows": 6.736,
+      "gap": 0.28600000000000003,
+      "worst_gap": 2.431,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "prior",
+      "strength": 20,
+      "ours": 6.43675,
+      "knows": 5.6715,
+      "gap": 0.40700000000000003,
+      "worst_gap": 2.63225,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "invariance",
+      "strength": 0.02,
+      "ours": 8.58325,
+      "knows": 8.58325,
+      "gap": 0.0,
+      "worst_gap": 0.0,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "invariance",
+      "strength": 0.05,
+      "ours": 8.422125,
+      "knows": 8.329625,
+      "gap": 0.2919999999999998,
+      "worst_gap": 0.60025,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "invariance",
+      "strength": 0.1,
+      "ours": 8.338125,
+      "knows": 6.849125,
+      "gap": 1.4732499999999997,
+      "worst_gap": 1.9972499999999993,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    },
+    {
+      "mode": "invariance",
+      "strength": 0.2,
+      "ours": 8.14575,
+      "knows": 6.067875,
+      "gap": 1.9867499999999998,
+      "worst_gap": 2.61325,
+      "scope_helps": 1.0,
+      "beats_rotate": 1.0
+    }
+  ]
+}
