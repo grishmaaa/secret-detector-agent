@@ -508,3 +508,319 @@ and found real problems. The fifth read the *implementation* and found that my
 sampler had been drawing from ranges I had not published. Every review that
 only saw the write-up missed it, because the write-up described what I intended
 rather than what ran.
+
+---
+
+# Week 2 — beliefs, information value, and a policy that can be wrong out loud
+
+Week 1 built an agent that decides. Week 2 asks what it believes, what it would
+pay to know, and what happens when the model behind both is wrong. The
+decisions below are in commit order.
+
+## Commit W2-1 — An information layer
+
+### 1.1 Measure the invariance rather than assert it
+
+Week 1's headline was that the two free features carry nothing about
+live-versus-revoked. I argued it from the likelihood rows being identical, which
+is a proof but not a measurement, and a proof is easy to state slightly wrong.
+
+So I computed the mutual information directly: **0.000000 bits**. Same claim,
+now with an instrument behind it rather than an argument.
+
+The one thing worth writing down is `snap()`. Floating-point noise around zero
+comes out of the entropy sum as `-2.2e-16` and prints as a tiny negative number,
+which is not a quantity — it is noise wearing a quantity's clothes. Snapping it
+to zero is not cosmetic; a reader who sees `-0.0000000000000002 bits` will
+reasonably wonder what physical thing is slightly less than nothing.
+
+### 1.2 Expected information gain, not information gain
+
+The brief treats mutual information and expected information gain as the same
+quantity, and they are, but only if you are careful which expectation you take.
+The gain from *this* observation is a number I can only compute after the
+observation exists. What the agent can price before buying is the average over
+every answer the evidence could give, weighted by how likely each answer is.
+
+I got this wrong in my head twice before writing it down, so it is in the code
+as a named function rather than an inline expression.
+
+## Commit W2-2 — Evidence selection
+
+### 2.1 Bits are not the unit the decision is denominated in
+
+Having built an instrument that measures information in bits, the obvious next
+move is to buy the evidence with the most bits. That is wrong, and the
+experiment says so in a table: **bits and value rank the available evidence in
+near-opposite orders.**
+
+The belief where the probe is most informative is the belief where it is worth
+the least, because it is the belief where the agent already knows what it is
+going to do. Information has value only if some answer would change the action.
+This is the Week 1 consumer-probe finding restated as a general property rather
+than a fact about one probe.
+
+So `action_changes()` gates everything. Cheapest test first: if no outcome moves
+the decision, the evidence is worth zero and there is nothing further to
+compute.
+
+## Commit W2-3 — Five states
+
+### 3.1 Add the states I said I could not characterise
+
+Week 1's README said there might be a fourth state and that I was leaving it out
+rather than guessing. Week 2 adds two: `zero_scope`, a key that authenticates but
+is authorised for nothing, and `other`, the residual.
+
+**`zero_scope` is carved out of `live`, not added beside it.** A key that
+authenticates is live by any test that asks "does this work". The question is
+whether it can do anything, which is a different question, and folding the two
+together is what made Week 1's `live` state mean two things at once. I split it
+at 1/12 of the live mass.
+
+`other` gets 1% and is the state I understand least. That is the point of it.
+
+### 3.2 The states alone changed nothing, and I am recording that
+
+Two new states, 500 cases, and the agent took **identical actions on every
+one**. Not similar — identical.
+
+I could have quietly added the scope field in the same commit and reported the
+improvement. Keeping them apart is what makes the result legible: a state you
+cannot observe is not a state, it is a footnote in the prior. What bought the
+improvement was the *evidence channel*, not the state, and separating the two
+commits is the only reason I can say that.
+
+## Commit W2-4 — Three fixes and a feedback loop
+
+### 4.1 The breach cost was carrying a probability it never declared
+
+`dismiss` on a live key was priced at 2400 minutes and described as "a breach
+and its cleanup". A dismissed live key is not certainly breached. The honest
+price is P(exploitation) × breach, and Week 1 was silently running at **p = 1.0**.
+
+This is the worst error in the project, and it is the kind that hides: nothing
+about 2400 looks like a probability, so nothing prompted me to check it. Setting
+p = 0.10 — still a deliberate over-estimate against the one published datapoint —
+took `fake` recall from **0.000 to 0.954** and balanced accuracy from **0.300 to
+0.467**.
+
+Before the fix the agent could not produce the `fake` label at all. It hedged
+everything, and posted a perfectly respectable cost number while doing it.
+
+### 4.2 Cost alone cannot see that failure, so report per-class recall
+
+I had been reporting expected cost, because the objective is cost and accuracy
+against a perfect baseline is meaningless. That reasoning is right about the
+*objective* and wrong about the *diagnostics*. An agent that takes one action on
+everything scores well on cost and has learned nothing. Per-class recall
+surfaced it in one table.
+
+Balanced accuracy is now reported alongside cost in every Week 2 experiment. Not
+as a goal — as the thing that catches the agent optimising the metric instead of
+the problem.
+
+### 4.3 Escalation is a rule, not a competitor
+
+Week 1 proved escalation is dominated on expected cost at every reachable
+belief, and I published that. It is true and it is the wrong conclusion, because
+escalation is not the sort of thing that should be competing on expected cost at
+all. Confidence is not authorisation.
+
+So it becomes a rule with two triggers: P(other) > 0.05, or a worst-case cost
+above a ceiling of 400 minutes. It fires on **2.4%** of findings. Both triggers
+are about the model not being trustworthy on this case, which is the actual
+reason to involve a person.
+
+### 4.4 A bug that cost an afternoon, recorded because the shape recurs
+
+When the breach cost dropped from 2400 to 244, I did not recompute the residual
+state's price. `dismiss` on `other` stayed at 602 minutes, which blocked every
+dismissal the fix existed to unlock. The fix looked ineffective rather than
+undone.
+
+**A derived quantity that is not recomputed looks exactly like a fix that did
+not work.** There is a comment to that effect in `costs()` and it is staying
+there.
+
+### 4.5 Feedback is asymmetric, and the asymmetry has a direction
+
+You find out you over-remediated (someone's build breaks: 80%). You rarely find
+out you under-remediated (nobody tells you about the key you dismissed: 5%).
+
+Learning from that feed drifts P(live) from **0.4356 to 0.2691**. The agent
+concludes the world is safer than it is, and every step of that inference is
+locally correct. This is the failure mode I would expect to actually happen in
+production, and it needs an alarm rather than a correction, because the agent has
+no unbiased signal to correct against.
+
+**Jensen–Shannon rather than KL.** JS is symmetric and bounded; KL is neither,
+and goes infinite the first time the agent observes something its model called
+impossible. An alarm that can return infinity is not an alarm. Threshold
+calibrated on held-out windows: 100% detection at 500.
+
+## Commit W2-5 — Is the cost model wrong, or is that hedging?
+
+### 5.1 A category label that was doing the arguing
+
+The failure breakdown put **76.6%** of wrong decisions in a bucket I had labelled
+"wrong cost assumption", and I was ready to conclude the cost model was
+mis-specified and go fix it.
+
+The 15-cell sweep says otherwise. Those cases are the agent paying to hedge a
+state it genuinely cannot resolve, which is the correct behaviour under
+uncertainty and not an error at all. **I had named the category in a way that
+assumed its own conclusion**, then read the conclusion back out of the name.
+
+The cost model is not the problem. The evidence is.
+
+### 5.2 A comparison I built wrong, corrected in place
+
+I measured the value of knowing live-versus-revoked by comparing an agent with
+the probe against an oracle *without* it, which is two changes at once. That
+produced 61.3%. The correct figure is **82.1%**.
+
+This was about to go in the paper. `results/cost-sensitivity.md` carries a
+visible correction block rather than a silent edit, because the number was
+already quoted elsewhere and a silently changed figure is worse than a wrong one.
+
+Also: ties were being counted as improvements in the sweep. Fixed with an
+epsilon.
+
+## Commit W2-6 — Two more channels, and one invented number retired
+
+### 6.1 Commit age breaks the invariance
+
+The Week 1 result — free features carry zero bits about live-versus-revoked — is
+a property of **static text**, not of repositories. Commit age is free, sits in
+the same repository the scanner already read, and separates the two states
+immediately.
+
+So the published claim was stated too broadly. It is not "you cannot tell live
+from revoked without authenticating"; it is "you cannot tell live from revoked
+*from the string itself*". That correction belongs in the paper more than the
+original result does.
+
+Both new channels are parameterised — *c* for rotation compliance, *k* for
+registry coverage — because I have no measurement for either.
+
+### 6.2 Sweep the last number I invented
+
+Every Week 2 channel is swept except one: the scope field's likelihood table,
+which I committed as a specific set of numbers, and which the best agent in the
+project rests on. That was the one place a headline result stood on a guess.
+
+So *q* — P(reads zero | authorised for nothing) — gets swept from 0.02 to 1.00.
+The rest of the table stays fixed, deliberately: a key *with* permissions
+reporting permissions is not an estimate, it is what the field means, and the
+`absent` column was copied from the probe's existing `null` row because *not in
+our account* is the same event in both.
+
+**The answer was not the one I was defending.** About 88% of the field's value
+is already there at q = 0.02, where the field cannot see the state it was
+introduced to detect. It is mostly a `fake` detector that arrives on the same
+call. **The stated reason a design change works is not always the reason it
+works**, and only removing the assumption shows which is which.
+
+## Commit W2-7 — A world that disagrees with the agent
+
+### 7.1 Stop generating cases from the agent's own tables
+
+Every result up to here draws its cases from the likelihood tables the agent
+reasons with, which tests the policy given the model and says nothing about the
+model. Week 1's `findings.md` admitted this and said a real test needs findings
+from somewhere else, which I did not have.
+
+I do not have real ones. I do have the ability to generate from *different*
+tables and run two agents on identical cases — mine, and one that knows the
+truth. The gap between them is the price of being wrong, separated from the
+price of not knowing.
+
+### 7.2 The split that matters
+
+**Policy conclusions survive in 100% of worlds.** The agent beats always-rotate
+everywhere; reading scope helps in 92–100%.
+
+**The structural conclusion does not.** Where `live` and `revoked` genuinely
+differ, the agent has proved a theorem saying they do not and acts on it, giving
+up 1.47 and 1.99 minutes per finding at δ = 0.10 and 0.20.
+
+The policy conclusion is about the world. The structural one is about the model.
+Only the first should ever be stated as a finding about secret scanning.
+
+### 7.3 A prediction I got backwards
+
+I expected wrong base rates to cost more than wrong likelihoods. The table says
+the reverse: +0.41 against +1.20. Free evidence washes out a wrong prior;
+nothing washes out a wrong likelihood, because the likelihood is what does the
+washing.
+
+## Commit W2-8 — Can the agent notice its own assumption is wrong?
+
+### 8.1 Parameter uncertainty cannot reach this
+
+The obvious response to W2-7 is to put uncertainty on the parameters. It does
+not help. The invariance is not a value to be uncertain about — it is a
+constraint tying two rows together, and sampling around a tied pair keeps them
+tied. What is missing is uncertainty about **which model is right**, which is a
+different kind of doubt and needs different machinery.
+
+Hence a Bayes factor between H0 (the rows are identical) and H1 (they differ),
+under Dirichlet-multinomial marginal likelihoods. It watches and never decides —
+it touches no action the agent takes.
+
+### 8.2 Feed it the biased data, because that is the data that exists
+
+The honest test gives the layer only what the agent's own discovery process
+surfaces, with the W2-4 asymmetry intact. Plus a **matched control**: an unskewed
+sample cut to the same total size, so that "fewer labels" and "unequal classes"
+can be told apart.
+
+Without that control I would have attributed the whole effect to the skew, which
+is what I expected and what I designed the experiment to demonstrate.
+
+### 8.3 The skew costs nothing; the sample size costs everything
+
+Biased and matched samples detect the same smallest difference (δ = 0.10). Full
+data reaches δ = 0.05. False positives at δ = 0 are 2%.
+
+The Bayes factor compares the *shape* of each class's distribution and
+normalises by its own count, so unequal n changes how precisely each shape is
+estimated without making identical shapes look different. My intuition said
+otherwise and my own experiment design assumed otherwise.
+
+**The agent does not need unbiased feedback to audit its own assumptions. It
+needs enough feedback.** That is a more encouraging conclusion than the one I set
+out to demonstrate, and I only reached it because the control was there to
+contradict me.
+
+### 8.4 What this does and does not fix
+
+At δ = 0.10 and 0.20 — exactly where W2-7 measured silent loss — detection is
+100%. The silent failure is no longer silent.
+
+It is still not repaired. Relaxing the invariance means estimating two separate
+rows, and there are not enough labels to do that well. Detection and repair are
+different problems and only the first one is solved. `results/misspecified.md`
+carries an amendment saying so, because the version I wrote at W2-7 asserted the
+failure was undetectable and that is now false.
+
+---
+
+## Week 2, in four lines
+
+**A cost that hides a probability is the most expensive kind of wrong number.**
+2400 minutes looked like a cost and was a cost times a certainty. Nothing in the
+number itself prompts the check.
+
+**Report the diagnostic that can contradict your objective.** Cost was the right
+objective and would never have shown me an agent that could not produce one of
+its own labels.
+
+**Separate the commit that adds a thing from the commit that makes it work.**
+Five states changed nothing; five states plus a channel changed everything. Two
+commits is the only reason I can tell you which.
+
+**Build the control that could embarrass the hypothesis.** The matched sample in
+W2-8, the second agent in W2-7, the q = 0.02 row in W2-6. All three contradicted
+what I expected, and all three were the finding.

@@ -8,15 +8,23 @@
 
 My first attempt at the hidden state was "is this string a secret or not". I dropped it because the scanner has already answered that — reporting that a string looks like a key is the whole of what it does. Restating its output as my hidden state would mean the agent adds nothing. It is also not what makes the decision hard. What I cannot see is what the key *is*, and the scanner does not tell me: it does not say what kind of key it found, and it does not say whether the key works.
 
-### The three states
+### The states
 
-1. **A live key.** Still authenticates. Whatever sits behind it is reachable by anyone who has the string.
+Week 1 was built on three. Week 2 added two more. Both are marked below, because
+the sequence is the point: I could not characterise states 4 and 5 when I wrote
+this section, said so, and added them once I could.
+
+1. **A live key.** Still authenticates, and is authorised to do something. Whatever sits behind it is reachable by anyone who has the string.
 2. **A revoked key.** Was real once, no longer works. Harmless now.
 3. **A fake key.** Hard-coded by a developer, never authenticated against anything.
+4. **A zero-scope key.** *(added in Week 2)* Authenticates, but is authorised for nothing. Live by any test that asks *does this work*, worthless to whoever finds it.
+5. **Something else.** *(added in Week 2)* A string that is not a credential at all, that just happens to look like one because something in the code needed a long random-looking string.
 
 The decision is hard because the actions I would take differ across them and what I can see does not tell me which state I am in.
 
-**I am not confident this list is complete.** I think there is probably a fourth case: a string that is not a key at all, that just happens to look like one because something else in the code needed a long random-looking string. I have not worked out how to characterise it — what it would look like, or how it would differ from a fake key in anything I can observe — so I have left it out rather than inventing a definition for it. I want to ask about it rather than name it myself and be wrong.
+**On state 4.** I originally wrote `live` as one state, and it was doing two jobs: *this authenticates* and *this is dangerous*. Those are different properties, and Stripe's publishable keys — live and safe to expose by design — are the clearest evidence that they come apart. So `zero_scope` is carved out of the live mass (1/12 of it) rather than added beside it. It is the only state added because an existing state was ambiguous rather than because a new case appeared.
+
+**On state 5.** I could not characterise it in Week 1 — what it would look like, or how it would differ from a fake key in anything I can observe — and left it out rather than inventing a definition. Week 2 puts it in at 1% of the prior and uses its own unreliability as the point: because I do not trust the cost model on this state, P(other) crossing 0.05 is one of the two triggers that hands the finding to a human. It is the least understood state in the model and it earns its place by being the reason the agent asks for help.
 
 ### The state space depends on the provider, and mine collapsed
 
@@ -638,7 +646,7 @@ Updated after choosing OpenAI. Marked by whether they still block anything.
 
 **Still open, and I am proceeding without them**
 
-**4. What is the fourth state?** A string that is not a credential at all. I still cannot characterise it. Not blocking — I am building with three and will add it if someone names it properly.
+**4. What is the fourth state?** — **Settled in Week 2, and there were two of them.** `other` is the residual I could not characterise, added at 1% of the prior and used as an escalation trigger precisely because I still cannot price it. `zero_scope` — authenticates but is authorised for nothing — came out of splitting `live`, which I had been using to mean two things at once. Neither state changed a single action on its own; the scope field that resolves them is what moved regret from 10.91 to 8.43. See `results/week2-results.md` and `results/scope-probe.md`.
 
 **5. Revoke now, or rotate safely — what decides it?** I have split remediation into two actions on the reasoning that leaving a system broken is not automatically the safe choice. I do not know what real teams weigh when they choose. **This is the question I most want answered**, because it prices two of my five actions.
 
@@ -746,6 +754,12 @@ Where an error changed a published number, I say which.
 | 8 | My problem statement says *ignore, verify, remove* and my agent has five actions. Are these the same problem? | Started three rounds of argument that nearly made me rebuild the model. The answer was a relabel and a mapping table, not a rebuild (entry 13) |
 | 9 | Rebuild this decision model from scratch with every parameter traced to a published source, and mark the ones that cannot be | Produced an independent parameterisation in dollars rather than engineer-minutes. Its indifference point is 0.079%; my unreachable-dismiss boundary is 0.15%. Two different models, same conclusion — the strongest external check the project has had |
 | 10 | My posterior assumes the two free features are conditionally independent. Test what happens when they are not | Produced the shrinkage sweep. The invariance survives at every weight; the *fake* collapse does not (entry 14) |
+| 11 | Measure the invariance rather than argue for it, and report it in bits | Mutual information came out at exactly 0.000000. The measurement agrees with the Week 1 proof, which is the point — the proof was untested until now |
+| 12 | Rank my available evidence by information, then rank it by value, and tell me whether the orders match | They do not. Near-opposite orders, and the belief where the probe is most informative is the belief where it is worth nothing. Generalised the Week 1 consumer-probe result |
+| 13 | The agent is getting 92% of cases right by taking one action on everything. Find the assumption that lets it do that | Found the unstated `p_exploit = 1.0` inside the 2400-minute breach cost. The single most valuable prompt of Week 2 (entry 20) |
+| 14 | Generate the test cases from tables the agent does *not* use, and run a second agent that knows the truth | Produced the mis-specification study. Separated the price of being wrong from the price of not knowing (entries 24, 25) |
+| 15 | Parameter uncertainty cannot express doubt about a structural constraint. What can? | Bayesian model comparison — a Bayes factor between the invariance and its negation. Neither the sessions nor the brief mention it; it arrived because an experiment found something the existing machinery could not say |
+| 16 | Before the paper: run a staleness check across the whole repository | Found three uncommitted commits, a results JSON generated by code that no longer existed, and a result file contradicted by a later one (entries 26, 27) |
 
 ### AI Errors
 
@@ -769,9 +783,42 @@ Where an error changed a published number, I say which.
 | 16 | Three separate review outputs | Repeated proposals to classify the key by whether the provider returns 403 rather than 401, framed as passive metadata | That requires sending the found credential to the provider. It is the one thing the paper forbids, and one of the same models had criticised a different answer for proposing it two messages earlier | Rejected each time. Also corrected the reasoning: a zero-scope key does not shift the belief, it lowers the breach cost — a cost-matrix change, not evidence. Recorded because a constraint stated in the abstract was violated three times by models that had read the abstract |
 | 17 | Checking someone else's review | "The cost matrix has 12 cells built from 8 components, not 15 and 9" | My own paper says fifteen and nine and my own paper is right: the table includes the investigate row, and the consumer hunt is priced twice, documented and undocumented. The count came from the code's `K` dictionary rather than from the paper | The review being corrected was right and the correction was wrong. Logged because it is the failure mode of checking a claim against the nearest artefact instead of the one the claim was about |
 | 18 | Writing `shrinkage.py` | `OUT = os.path.join(HERE, "results")` | The same class of bug as entry 8, eight rounds later. Every other script writes to `HERE/../results`; this one would have written to `experiments/results/` once it was in the repository, and worked in the flat scratch directory purely by accident | Fixed to match the existing convention. Caught by a full file audit rather than by running it |
+| 19 | Valuing the live-versus-revoked axis | "Perfect knowledge of live vs revoked is worth 61.3% of total regret" | Confounded, and in the same shape as entry 6. It compared an agent *with* the probe against an oracle *without* it — two changes at once | **Changed a number I was about to publish.** The correct figure is 82.1%. `results/cost-sensitivity.md` carries a visible correction block rather than a silent edit, because 61.3% had already been quoted elsewhere |
+| 20 | Auditing the cost matrix | The 2400-minute price for dismissing a live key, presented as "a breach and its cleanup" | It was a breach cost times an unstated certainty of exploitation. Week 1 had been running at p = 1.0 without writing it down, and nothing about the number 2400 looks like a probability, so nothing prompted the check | **The most consequential fix in the project.** Making it explicit at p = 0.10 took `fake` recall from 0.000 to 0.954 and balanced accuracy from 0.300 to 0.467 |
+| 21 | Applying the p_exploit fix | The fix appeared to do nothing | The residual state's price is derived from the breach cost and was not recomputed. `dismiss` on `other` stayed at 602 minutes and blocked every dismissal the fix existed to unlock | Recomputed. **A derived quantity that is not recomputed looks exactly like a fix that did not work**, which is why the comment explaining it stays in `costs()` |
+| 22 | Reading the cost-cell sweep | Cells reported as improvements | Exact ties were being counted as improvements | Fixed with an epsilon threshold |
+| 23 | Advice on mis-pricing | "When in doubt, guess high on the costs" | Contradicted by the table directly beneath it. Over-pricing the *default* action and under-pricing an *alternative* are the two dangerous directions; the rule is per-action, not global | Replaced with the per-action rule |
+| 24 | First run of the drift alarm | "The Jensen–Shannon alarm does not work" | Declared off a single seed with an uncalibrated threshold | Wrong. A held-out threshold sweep gives 100% detection at a 500-case window, 0% false positives |
+| 25 | Predicting the mis-specification result | "Wrong base rates will cost more than wrong likelihoods" | The table shows the reverse: +0.41 for the prior against +1.20 for the likelihoods. Free evidence washes out a wrong prior; nothing washes out a wrong likelihood, because the likelihood is what does the washing | Prediction removed from the write-up and the finding stated as measured |
+| 26 | Designing the W2-8 feedback test | "The discovery process will deliver about 2.5× as many revoked labels as live, and that skew is the difficulty" | Measured 1.5×, and the matched control showed the skew costs no sensitivity at all — biased and unskewed samples of the same size detect the same smallest difference. **The experiment's own premise was wrong** | Rewritten. The finding is that sample size costs everything and skew costs nothing, which is the opposite of what it was built to show, and more encouraging |
+| 27 | Attributing the scope field's value | "The scope field earns its place by detecting `zero_scope`" | 88% of the value is present at q = 0.02, where the field cannot see `zero_scope` at all. It is mostly a `fake` detector, via the `absent` column I copied rather than the number I invented | Corrected. **The stated reason a design change works is not always the reason it works**, and only sweeping the parameter away showed which was which |
+| 28 | Reporting Week 2 status | "W2-6, W2-7 and W2-8 are committed and pushed" | They were on disk only. The reflog ended at W2-5, and `results/registry.json` had been generated by a version of `registry.py` that no longer existed, so it disagreed with its own markdown | Caught by a staleness audit that re-ran every script in a clean tree and diffed the output. Committed, and the JSON regenerated |
 
-**What I take from this table.** Four of the ten changed a published number, and
-three of those four were found by an AI reviewing another AI's work rather than
-by me. The two I caught myself (1 and 3) were both cases where a document
-contradicted itself on its own page — which seems to be the only class of error
-I reliably notice unaided.
+**What I take from this table.** Nine of the twenty-eight changed a published
+number or a published claim, and most of those were found by an AI reviewing
+another AI's work, or by an experiment contradicting the write-up that had been
+built around it, rather than by me reading carefully.
+
+The errors sort into three kinds, and the split is more useful than the count.
+
+**Arithmetic and plumbing** — entries 1, 8, 18, 21, 22. Cheap to fix, always
+caught eventually, and caught by running things rather than by reading them.
+
+**Confident claims about things nobody checked** — entries 4, 11, 12, 17, 28.
+Fabricated author lists, an imaginary earlier draft, a cell count contradicted by
+my own paper, three commits reported as pushed that were sitting on disk. These
+are the ones that would have survived into a submission, because they read
+exactly like the true sentences around them.
+
+**Predictions stated before the measurement, then not revisited** — entries 19,
+23, 24, 25, 26, 27. This is the class that grew in Week 2 and the one I now
+watch for. Every entry in it has the same shape: a claim made while designing the
+experiment, left in the write-up, and falsified by the experiment's own output.
+The 2.5× skew that measured 1.5×, the scope field's value attributed to the
+wrong column, the base-rate prediction that came out backwards, the "undetectable"
+failure that W2-8 detected in 100% of runs. Nothing external is needed to catch
+any of them — the contradicting number is already in the file.
+
+The two I caught unaided (1 and 3) were both cases where a document contradicted
+itself on its own page. That is still the only class of error I reliably notice
+without running something.
