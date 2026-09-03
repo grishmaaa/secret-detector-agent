@@ -85,9 +85,30 @@ The case generator draws from the same likelihood tables the agent reasons
 with, so the agent is being tested in a world that agrees with its own
 assumptions. That flatters every policy that uses evidence, and it is the
 reason `data/cases.json` is written once and never regenerated. A real test
-needs findings whose true states came from somewhere other than my model, and
-I do not have those.
+needs findings whose true states came from somewhere other than my model.
+
+> **Amended in Week 2.** I wrote here that I did not have such findings, and
+> left it at that. I still do not have real ones — nothing in this project has
+> ever been measured against labelled findings from the world. But that is not
+> the same as having no test, which is what I let the sentence imply.
+> `experiments/misspecified.py` generates the cases from *different* tables and
+> runs two agents on identical findings: this one, and one that knows the truth.
+> The gap between them prices being wrong, separately from not knowing.
+>
+> The answer splits. Policy conclusions survive in 100% of worlds — the agent
+> beats always-rotate everywhere, and reading scope helps in 92–100%. The
+> structural conclusion does not: where `live` and `revoked` genuinely differ,
+> the agent has proved a theorem saying they do not and gives up 1.47 and 1.99
+> minutes per finding at δ = 0.10 and 0.20. See `misspecified.md`, and
+> `model-uncertainty.md` for what the agent can do about noticing.
 
 Forty cases is also few enough that one dismissed live key moves the total by
 more than half. The exact expected costs do not have that problem, which is why
 both are reported.
+
+One number on this page did not survive Week 2. **Dismissing a live key is
+priced at 2400 minutes throughout, and that figure carries an unstated
+probability of exploitation equal to 1.** The honest price is P(exploitation) ×
+breach. Every realised-cost figure above is measured under the certainty
+version, which is why the Week 1 agent hedges as hard as it does. `fixes.md`
+has what changed when the assumption was made explicit.
