@@ -1,0 +1,91 @@
+{
+  "n_cases": 2000,
+  "seeds": 40,
+  "alpha": 1.0,
+  "threshold": 1.0,
+  "discovery": {
+    "over": 0.8,
+    "right": 0.3,
+    "under": 0.05
+  },
+  "rows": [
+    {
+      "delta": 0.0,
+      "biased_detect": 0.025,
+      "unbiased_detect": 0.0,
+      "biased_bf": -1.5717580512220923,
+      "unbiased_bf": -2.040982518943404,
+      "matched_detect": 0.0,
+      "matched_bf": -1.6363694795213541,
+      "n_live": 259.9,
+      "n_revoked": 395.25,
+      "n_live_un": 878.275,
+      "n_revoked_un": 531.2
+    },
+    {
+      "delta": 0.02,
+      "biased_detect": 0.0,
+      "unbiased_detect": 0.075,
+      "biased_bf": -1.4410958847833801,
+      "unbiased_bf": -0.8155501546599718,
+      "matched_detect": 0.025,
+      "matched_bf": -1.2103233629012613,
+      "n_live": 259.95,
+      "n_revoked": 394.5,
+      "n_live_un": 878.275,
+      "n_revoked_un": 531.2
+    },
+    {
+      "delta": 0.05,
+      "biased_detect": 0.425,
+      "unbiased_detect": 1.0,
+      "biased_bf": 0.9127850359842226,
+      "unbiased_bf": 6.336373624899668,
+      "matched_detect": 0.725,
+      "matched_bf": 2.048584780189769,
+      "n_live": 260.075,
+      "n_revoked": 393.025,
+      "n_live_un": 878.275,
+      "n_revoked_un": 531.2
+    },
+    {
+      "delta": 0.1,
+      "biased_detect": 1.0,
+      "unbiased_detect": 1.0,
+      "biased_bf": 12.768418695225575,
+      "unbiased_bf": 40.2954210835175,
+      "matched_detect": 1.0,
+      "matched_bf": 16.76498120438655,
+      "n_live": 260.3,
+      "n_revoked": 390.325,
+      "n_live_un": 878.275,
+      "n_revoked_un": 531.2
+    },
+    {
+      "delta": 0.2,
+      "biased_detect": 1.0,
+      "unbiased_detect": 1.0,
+      "biased_bf": 24.45147793606963,
+      "unbiased_bf": 72.07786028454355,
+      "matched_detect": 1.0,
+      "matched_bf": 30.08554137112577,
+      "n_live": 260.35,
+      "n_revoked": 384.425,
+      "n_live_un": 878.275,
+      "n_revoked_un": 531.2
+    },
+    {
+      "delta": 0.35,
+      "biased_detect": 1.0,
+      "unbiased_detect": 1.0,
+      "biased_bf": 49.681727489582826,
+      "unbiased_bf": 128.992584862048,
+      "matched_detect": 1.0,
+      "matched_bf": 56.13553354389444,
+      "n_live": 260.425,
+      "n_revoked": 376.1,
+      "n_live_un": 878.275,
+      "n_revoked_un": 531.2
+    }
+  ]
+}

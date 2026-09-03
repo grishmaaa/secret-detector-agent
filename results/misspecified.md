@@ -76,16 +76,28 @@ agent has proved a theorem saying otherwise and acts on it.
 
 At δ = 0.20 -- a substantial real difference --
 the agent forgoes 1.99 minutes per finding by refusing
-to look for a signal that is there. The failure is silent: nothing in
-the agent's own diagnostics can detect it, because the invariance is
-an assumption about the likelihood tables rather than an observation,
-and the agent never observes its own tables being wrong.
+to look for a signal that is there. The zero-bits result is exact
+given the tables and worth nothing if the tables are wrong.
 
-**That is the honest limitation of the whole project, stated with a
-number attached.** The zero-bits result is exact given the tables and
-worth nothing if the tables are wrong, and the only way to find out is
-to measure the likelihoods against real labelled findings, which is
-the one thing this project has never been able to do.
+> **Amended after W2-8.** What I wrote here first was that the failure
+> is silent -- that nothing in the agent's own diagnostics can detect
+> it, because the invariance is an assumption about the likelihood
+> tables rather than an observation, and the agent never observes its
+> own tables being wrong. I also wrote that the only way to find out
+> was to measure the likelihoods against real labelled findings, which
+> this project has never been able to do. Both claims are false, and
+> `model_uncertainty.py` is what falsified them. A Bayes factor
+> between H0 (the rows are identical) and H1 (they differ), fed only
+> the labels the agent's own biased discovery process surfaces, flags
+> the broken invariance in 100% of runs at δ ≥ 0.10 -- the same δ
+> values priced above at +1.47 and +1.99 minutes. No real labels, no
+> oracle, no clean feedback. See `results/model-uncertainty.md`.
+
+What survives the amendment is the limitation underneath it. The agent
+can now notice the assumption is wrong; it still cannot repair it,
+because relaxing the invariance means estimating two separate rows and
+there are not enough labels to do that well. Detection and repair are
+different problems and only the first one is solved.
 
 ## Conclusions that hold, and the one that does not
 
@@ -93,7 +105,7 @@ the one thing this project has never been able to do.
 |---|---|
 | The agent beats always-rotate | holds in 100–100% of worlds |
 | Reading scope helps | holds in 92–100% of worlds |
-| Free features carry zero bits about live vs revoked | **fails whenever the world says otherwise, undetectably** |
+| Free features carry zero bits about live vs revoked | **fails whenever the world says otherwise** -- detectable from the agent's own feedback at δ ≥ 0.10 (W2-8), not repairable |
 
 The policy conclusions are robust to the model being wrong. The
 structural conclusion is not, and cannot be, because it is a statement
