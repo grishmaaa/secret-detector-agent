@@ -119,6 +119,12 @@ def main():
     add("consistent with a mis-priced matrix and with an insurance premium")
     add("correctly paid.\n")
 
+    add("> **Correction.** An earlier version of this analysis reported the")
+    add("> value of perfect live-versus-revoked knowledge as 61.3% of the")
+    add("> total. That figure compared an agent that could buy the probe")
+    add("> against an oracle that could not, so the oracle was handicapped and")
+    add("> its value understated. Recomputed with the same agent on both sides,")
+    add("> the correct figure is **82.1%**. See `results/registry.md`.\n")
     add("## Step 1: how much of the regret was ever avoidable?\n")
     add("Regret here is measured against an agent that already knows the")
     add("answer. Nobody can match that. The honest question is whether any")

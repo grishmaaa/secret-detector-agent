@@ -7,6 +7,13 @@ probability on the true state and remediated anyway, which is equally
 consistent with a mis-priced matrix and with an insurance premium
 correctly paid.
 
+> **Correction.** An earlier version of this analysis reported the
+> value of perfect live-versus-revoked knowledge as 61.3% of the
+> total. That figure compared an agent that could buy the probe
+> against an oracle that could not, so the oracle was handicapped and
+> its value understated. Recomputed with the same agent on both sides,
+> the correct figure is **82.1%**. See `results/registry.md`.
+
 ## Step 1: how much of the regret was ever avoidable?
 
 Regret here is measured against an agent that already knows the
