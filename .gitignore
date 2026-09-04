@@ -24,6 +24,8 @@ paper/*.fdb_latexmk
 # Download them from https://www.ijcai.org/authors_kit before compiling the paper.
 paper/ijcai*.sty
 paper/named.bst
+paper/**/ijcai*.sty
+paper/**/named.bst
 
 # Agent decision traces - my own working record, not a project deliverable.
 agent_logs/
