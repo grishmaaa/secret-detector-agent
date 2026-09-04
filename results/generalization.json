@@ -1,0 +1,217 @@
+{
+  "seed": 20260902,
+  "n": 500,
+  "l_ident": {
+    "live": {
+      "active": 0.98,
+      "inactive": 0.01,
+      "absent": 0.01
+    },
+    "revoked": {
+      "active": 0.02,
+      "inactive": 0.96,
+      "absent": 0.02
+    },
+    "fake": {
+      "active": 0.0,
+      "inactive": 0.0,
+      "absent": 1.0
+    },
+    "zero_scope": {
+      "active": 0.98,
+      "inactive": 0.01,
+      "absent": 0.01
+    },
+    "other": {
+      "active": 0.0,
+      "inactive": 0.02,
+      "absent": 0.98
+    }
+  },
+  "false_negative": [
+    {
+      "kind": "false-negative cost",
+      "factor": 1,
+      "p_exploit": 0.1,
+      "dismiss_live": 244.5,
+      "regret": 8.2275,
+      "cost": 59.1695,
+      "probes": 0.468,
+      "escalated": 0.028,
+      "balanced": 0.4591664788422826
+    },
+    {
+      "kind": "false-negative cost",
+      "factor": 2.5,
+      "p_exploit": 0.25,
+      "dismiss_live": 603.75,
+      "regret": 15.558,
+      "cost": 66.5,
+      "probes": 0.468,
+      "escalated": 0.274,
+      "balanced": 0.1971830985915493
+    },
+    {
+      "kind": "false-negative cost",
+      "factor": 5,
+      "p_exploit": 0.5,
+      "dismiss_live": 1202.5,
+      "regret": 15.276,
+      "cost": 66.56,
+      "probes": 0.582,
+      "escalated": 0.266,
+      "balanced": 0.19812206572769953
+    },
+    {
+      "kind": "false-negative cost",
+      "factor": 10,
+      "p_exploit": 1.0,
+      "dismiss_live": 2400.0,
+      "regret": 11.702,
+      "cost": 62.644,
+      "probes": 0.468,
+      "escalated": 0.126,
+      "balanced": 0.1971830985915493
+    }
+  ],
+  "evidence_cost": [
+    {
+      "factor": 1,
+      "price": 3,
+      "regret": 8.2275,
+      "cost": 59.1695,
+      "probes": 0.468,
+      "escalated": 0.028,
+      "balanced": 0.4591664788422826
+    },
+    {
+      "factor": 2,
+      "price": 6,
+      "regret": 9.197,
+      "cost": 59.695,
+      "probes": 0.16,
+      "escalated": 0.014,
+      "balanced": 0.40496079024594334
+    },
+    {
+      "factor": 5,
+      "price": 15,
+      "regret": 10.49825,
+      "cost": 60.03625,
+      "probes": 0.0,
+      "escalated": 0.01,
+      "balanced": 0.38178190392130873
+    },
+    {
+      "factor": 10,
+      "price": 30,
+      "regret": 10.49825,
+      "cost": 60.03625,
+      "probes": 0.0,
+      "escalated": 0.01,
+      "balanced": 0.38178190392130873
+    },
+    {
+      "factor": 20,
+      "price": 60,
+      "regret": 10.49825,
+      "cost": 60.03625,
+      "probes": 0.0,
+      "escalated": 0.01,
+      "balanced": 0.38178190392130873
+    }
+  ],
+  "openai": {
+    "regret": 8.2275,
+    "cost": 59.1695,
+    "probes": 0.468,
+    "escalated": 0.028,
+    "per_class": {
+      "live": 0.9859154929577465,
+      "revoked": 0.08527131782945736,
+      "fake": 0.9389312977099237,
+      "zero_scope": 0.2857142857142857,
+      "other": 0.0
+    },
+    "balanced": 0.4591664788422826
+  },
+  "aws": {
+    "regret": 2.77075,
+    "cost": 52.42875,
+    "probes": 0.04,
+    "escalated": 0.022,
+    "per_class": {
+      "live": 0.9812206572769953,
+      "revoked": 0.9612403100775194,
+      "fake": 0.9541984732824428,
+      "zero_scope": 0.0,
+      "other": 0.0
+    },
+    "balanced": 0.5793318881273916
+  },
+  "openai_oracle": {
+    "regret": 1.47425,
+    "cost": 51.66625,
+    "probes": 0.218,
+    "escalated": 0.022,
+    "per_class": {
+      "live": 0.9953051643192489,
+      "revoked": 0.9922480620155039,
+      "fake": 0.9541984732824428,
+      "zero_scope": 0.2857142857142857,
+      "other": 0.0
+    },
+    "balanced": 0.6454931970662963
+  },
+  "aws_noscope": {
+    "regret": 2.54075,
+    "cost": 52.18075,
+    "probes": 0.034,
+    "escalated": 0.016,
+    "per_class": {
+      "live": 0.9812206572769953,
+      "revoked": 0.9689922480620154,
+      "fake": 0.9770992366412213,
+      "zero_scope": 0.0,
+      "other": 0.0
+    },
+    "balanced": 0.5854624283960465
+  },
+  "openai_noscope": {
+    "regret": 10.49825,
+    "cost": 60.06625,
+    "probes": 0.01,
+    "escalated": 0.01,
+    "per_class": {
+      "live": 0.9953051643192489,
+      "revoked": 0.007751937984496124,
+      "fake": 0.5725190839694656,
+      "zero_scope": 0.0,
+      "other": 0.3333333333333333
+    },
+    "balanced": 0.38178190392130873
+  },
+  "lr_ceiling": 6.7532499999999995,
+  "recovered": 0.8080183615296339,
+  "mutual_information": {
+    "repository context": {
+      "live vs revoked": 0.0,
+      "live vs zero_scope": 0.0,
+      "live vs fake": 0.3530752750444748
+    },
+    "well-formedness": {
+      "live vs revoked": 0.0,
+      "live vs zero_scope": 0.0,
+      "live vs fake": 0.3636745735706324
+    },
+    "identifier lookup": {
+      "live vs revoked": 0.8399806669018237,
+      "live vs zero_scope": 0.0,
+      "live vs fake": 0.8981450517650307
+    }
+  },
+  "scope_value": {
+    "openai": 2.2707500000000014,
+    "aws": -0.22999999999999998
+  }
+}

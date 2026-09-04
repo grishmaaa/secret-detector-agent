@@ -1,0 +1,212 @@
+{
+  "case": {
+    "context": "production",
+    "form": "well-formed"
+  },
+  "bayes": [
+    {
+      "state": "live",
+      "prior": 0.43559999999999993,
+      "l_context": 0.6,
+      "l_form": 0.99,
+      "joint": 0.594,
+      "product": 0.25874639999999993,
+      "posterior": 0.5779954355409777
+    },
+    {
+      "state": "revoked",
+      "prior": 0.26730000000000004,
+      "l_context": 0.6,
+      "l_form": 0.99,
+      "joint": 0.594,
+      "product": 0.15877620000000003,
+      "posterior": 0.3546790172637819
+    },
+    {
+      "state": "fake",
+      "prior": 0.2475,
+      "l_context": 0.05,
+      "l_form": 0.4,
+      "joint": 0.020000000000000004,
+      "product": 0.00495,
+      "posterior": 0.011057457827153692
+    },
+    {
+      "state": "zero_scope",
+      "prior": 0.039599999999999996,
+      "l_context": 0.6,
+      "l_form": 0.99,
+      "joint": 0.594,
+      "product": 0.023522399999999995,
+      "posterior": 0.05254503959463434
+    },
+    {
+      "state": "other",
+      "prior": 0.01,
+      "l_context": 0.3333333333333333,
+      "l_form": 0.5,
+      "joint": 0.16666666666666666,
+      "product": 0.0016666666666666666,
+      "posterior": 0.0037230497734524214
+    }
+  ],
+  "evidence_total": 0.4476616666666666,
+  "belief_after_free": {
+    "live": 0.5779954355409777,
+    "revoked": 0.3546790172637819,
+    "fake": 0.011057457827153692,
+    "zero_scope": 0.05254503959463434,
+    "other": 0.0037230497734524214
+  },
+  "questions": [
+    {
+      "question": "Is the string on a production-looking path?",
+      "answers": "placeholder / neutral / production",
+      "cost": 0.0,
+      "time": "milliseconds, already read",
+      "note": "Free, and already counted in the belief this table is computed from.",
+      "eig": 0.019855097759597706,
+      "evsi": 0.0,
+      "net": 0.0,
+      "ask": false
+    },
+    {
+      "question": "Does the string match the provider's key format?",
+      "answers": "well-formed / malformed",
+      "cost": 0.0,
+      "time": "milliseconds, one regex",
+      "note": "Free, and likewise already in the belief.",
+      "eig": 0.038004624029865486,
+      "evsi": -1.4210854715202004e-14,
+      "net": -1.4210854715202004e-14,
+      "ask": false
+    },
+    {
+      "question": "Is the commit older than the rotation period?",
+      "answers": "old / young",
+      "cost": 0.0,
+      "time": "seconds, git metadata",
+      "note": "Free. Worth nothing at c = 0.5 and worth a great deal at c = 0.9; the parameter is the organisation, not the evidence.",
+      "eig": 0.0,
+      "evsi": 0.0,
+      "net": 0.0,
+      "ask": false
+    },
+    {
+      "question": "When did our own admin API last see this key used?",
+      "answers": "recent / old / null",
+      "cost": 3.0,
+      "time": "3 min, one API call plus the engineer around it",
+      "note": "The scope field arrives on the same call, so they are priced together.",
+      "eig": 0.6641551295892216,
+      "evsi": 2.912974553212919,
+      "net": -0.0870254467870808,
+      "ask": false
+    },
+    {
+      "question": "Does the string match a currently-deployed secret hash?",
+      "answers": "match / miss",
+      "cost": 1.0,
+      "time": "1 min, one lookup",
+      "note": "A match is near-proof of live. A miss is only as informative as the provisioning pipeline is complete.",
+      "eig": 0.2244877953850184,
+      "evsi": -1.4210854715202004e-14,
+      "net": -1.0000000000000142,
+      "ask": false
+    }
+  ],
+  "tuned": {
+    "age_c09": 1.4817304884269191,
+    "registry_k09": 1.3757286075421575
+  },
+  "grid": [
+    {
+      "context": "placeholder",
+      "form": "well-formed",
+      "p_live": 0.2984921179680335,
+      "action": "rotate",
+      "evsi": 9.611401066965072,
+      "net": 6.6114010669650725,
+      "buy": true,
+      "features": "conflict"
+    },
+    {
+      "context": "placeholder",
+      "form": "malformed",
+      "p_live": 0.004095556722112966,
+      "action": "dismiss",
+      "evsi": 0.4475375689814127,
+      "net": -2.5524624310185873,
+      "buy": false,
+      "features": "agree"
+    },
+    {
+      "context": "neutral",
+      "form": "well-formed",
+      "p_live": 0.5239071701194963,
+      "action": "rotate",
+      "evsi": 4.170125723955849,
+      "net": 1.1701257239558487,
+      "buy": true,
+      "features": "one is silent"
+    },
+    {
+      "context": "neutral",
+      "form": "malformed",
+      "p_live": 0.03185827763443918,
+      "action": "dismiss",
+      "evsi": 3.4178750156092317,
+      "net": 0.4178750156092317,
+      "buy": true,
+      "features": "one is silent"
+    },
+    {
+      "context": "production",
+      "form": "well-formed",
+      "p_live": 0.5779954355409777,
+      "action": "rotate",
+      "evsi": 2.912974553212919,
+      "net": -0.0870254467870808,
+      "buy": false,
+      "features": "agree"
+    },
+    {
+      "context": "production",
+      "form": "malformed",
+      "p_live": 0.19293307086614167,
+      "action": "rotate",
+      "evsi": 9.511078149606291,
+      "net": 6.511078149606291,
+      "buy": true,
+      "features": "conflict"
+    }
+  ],
+  "umbrella": {
+    "p_rain": 0.35,
+    "cases": [
+      {
+        "name": "A walk to the shop",
+        "carry": 2,
+        "wet": 5,
+        "break_even": 0.4,
+        "cost_carry": 2.0,
+        "cost_leave": 1.75,
+        "take": false
+      },
+      {
+        "name": "A wedding, in clothes I cannot replace",
+        "carry": 2,
+        "wet": 200,
+        "break_even": 0.01,
+        "cost_carry": 2.0,
+        "cost_leave": 70.0,
+        "take": true
+      }
+    ],
+    "agent": {
+      "false_positive": 30,
+      "false_negative": 244.5,
+      "break_even": 0.1092896174863388
+    }
+  }
+}
