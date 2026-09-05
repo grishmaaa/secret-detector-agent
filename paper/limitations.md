@@ -1,8 +1,8 @@
 # Limitations
 
-Draft for the preprint. I have kept the ones that would change a result
-separate from the ones that only narrow what the result applies to, because a
-reader should be able to tell those apart quickly.
+The long-form version of the preprint's limitations section. I have kept the
+ones that would change a result separate from the ones that only narrow what the
+result applies to, because a reader should be able to tell those apart quickly.
 
 ## 1. Where the model is deliberately wrong
 
