@@ -424,6 +424,33 @@ safely} are terminal and compete on expected cost. \textsc{investigate} is a
 decision point rather than an action. \textsc{escalate} is a permission gate, and
 Week~1's mistake was pricing it as though it were competing.
 
+\paragraph{The cost matrix.} Every number in this paper is denominated in
+engineer-minutes, and this is the whole of it. The four terminal actions against
+the five states:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+& \texttt{live} & \texttt{revoked} & \texttt{fake} & \texttt{zero\_scope} & \texttt{other} \\
+\midrule
+\textsc{dismiss} & 244.5 & 2 & 2 & 5 & 63.4 \\
+\textsc{revoke now} & 332 & 2 & 5 & 5 & 86.0 \\
+\textsc{rotate safely} & 112 & 30 & 20 & 30 & 48.0 \\
+\textsc{escalate} & 142 & 32 & 32 & 35 & 78.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These are my estimates, not measurements, and Section~\ref{sec:limits} says so at
+length. Three of them are derived rather than chosen. \textsc{dismiss} on a
+\texttt{live} key is $P(\text{exploitation}) \times \text{breach}$, which
+Section~\ref{sec:failure} is about. \textsc{escalate} is thirty minutes of human
+attention plus whatever the person then does. The \texttt{other} column is the
+mean over the four known states, which is what makes it move whenever the breach
+cost moves---and forgetting to recompute it after that cost changed cost me an
+afternoon.
+
 \paragraph{Threshold.} Derived, as in Section~\ref{sec:umbrella}: 0.1093 from a
 30-minute false positive against a 244.5-minute false negative. Ten points lower
 and the agent dismisses a band it currently rotates; ten points higher and it
