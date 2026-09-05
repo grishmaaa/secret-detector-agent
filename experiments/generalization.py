@@ -138,7 +138,12 @@ def evaluate(cases, use_ident, use_scope=True, oracle_lr=False):
     else -- prior, cost matrix, free features, probe, escalation rules -- is
     held identical, so any difference is the credential format and nothing else.
     """
-    rng = random.Random(4242)
+    # One stream per channel. Sharing one generator between the identifier
+    # draw and the scope draw means the no-scope arm, which makes no scope
+    # draws, sees a DIFFERENT identifier sequence from the with-scope arm --
+    # 19 of 500 observations differ in what is presented as a paired A/B.
+    rng_ident = random.Random(4242)
+    rng_scope = random.Random(4243)
     # In the AWS world the identifier has already settled whether the key is in
     # the account, so scope is the two-outcome present-only field; carrying the
     # three-outcome table there would count one event twice.
@@ -157,7 +162,7 @@ def evaluate(cases, use_ident, use_scope=True, oracle_lr=False):
         tabs, ev = [W.L_CONTEXT, W.L_FORM], [case["context"], case["form"]]
         if use_ident:
             tabs.append(L_IDENT)
-            ev.append(draw(L_IDENT, t, rng))
+            ev.append(draw(L_IDENT, t, rng_ident))
         b = I.update(dict(W.PRIOR), tabs, tuple(ev))
 
         if oracle_lr and t in ("live", "revoked"):
@@ -180,7 +185,7 @@ def evaluate(cases, use_ident, use_scope=True, oracle_lr=False):
         if now - after > R.K["probe"]:
             obs = [case["probe"]]
             if use_scope:
-                obs.append(draw(scope_tab, t, rng))
+                obs.append(draw(scope_tab, t, rng_scope))
             b = I.update(b, tables, tuple(obs))
             extra = R.K["probe"]
             probes += 1

@@ -44,8 +44,8 @@ it changes from where the agent is standing.
 
 | Question | Answers | Bits | Value, min | Cost, min | Time | Ask? |
 |---|---|---|---|---|---|---|
-| Is the string on a production-looking path? | placeholder / neutral / production | 0.0199 | 0.0000 | 0 | milliseconds, already read | no |
-| Does the string match the provider's key format? | well-formed / malformed | 0.0380 | -0.0000 | 0 | milliseconds, one regex | no |
+| Is the string on a production-looking path? | placeholder / neutral / production | 0.0000 | 0.0000 | 0 | milliseconds, already read | no |
+| Does the string match the provider's key format? | well-formed / malformed | 0.0000 | -0.0000 | 0 | milliseconds, one regex | no |
 | Is the commit older than the rotation period? | old / young | 0.0000 | 0.0000 | 0 | seconds, git metadata | no |
 | When did our own admin API last see this key used? | recent / old / null | 0.6642 | 2.9130 | 3 | 3 min, one API call plus the engineer around it | no |
 | Does the string match a currently-deployed secret hash? | match / miss | 0.2245 | -0.0000 | 1 | 1 min, one lookup | no |

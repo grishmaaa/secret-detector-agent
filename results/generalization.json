@@ -34,64 +34,64 @@
       "factor": 1,
       "p_exploit": 0.1,
       "dismiss_live": 244.5,
-      "regret": 8.2275,
-      "cost": 59.1695,
+      "regret": 7.7735,
+      "cost": 58.7155,
       "probes": 0.468,
       "escalated": 0.028,
-      "balanced": 0.4591664788422826
+      "balanced": 0.4942036025847969
     },
     {
       "kind": "false-negative cost",
       "factor": 2.5,
       "p_exploit": 0.25,
       "dismiss_live": 603.75,
-      "regret": 15.558,
-      "cost": 66.5,
+      "regret": 15.044,
+      "cost": 65.986,
       "probes": 0.468,
-      "escalated": 0.274,
-      "balanced": 0.1971830985915493
+      "escalated": 0.272,
+      "balanced": 0.2323943661971831
     },
     {
       "kind": "false-negative cost",
       "factor": 5,
       "p_exploit": 0.5,
       "dismiss_live": 1202.5,
-      "regret": 15.276,
-      "cost": 66.56,
+      "regret": 15.882,
+      "cost": 67.166,
       "probes": 0.582,
-      "escalated": 0.266,
-      "balanced": 0.19812206572769953
+      "escalated": 0.274,
+      "balanced": 0.19530516431924883
     },
     {
       "kind": "false-negative cost",
       "factor": 10,
       "p_exploit": 1.0,
       "dismiss_live": 2400.0,
-      "regret": 11.702,
-      "cost": 62.644,
+      "regret": 11.128,
+      "cost": 62.07,
       "probes": 0.468,
-      "escalated": 0.126,
-      "balanced": 0.1971830985915493
+      "escalated": 0.122,
+      "balanced": 0.2323943661971831
     }
   ],
   "evidence_cost": [
     {
       "factor": 1,
       "price": 3,
-      "regret": 8.2275,
-      "cost": 59.1695,
+      "regret": 7.7735,
+      "cost": 58.7155,
       "probes": 0.468,
       "escalated": 0.028,
-      "balanced": 0.4591664788422826
+      "balanced": 0.4942036025847969
     },
     {
       "factor": 2,
       "price": 6,
-      "regret": 9.197,
-      "cost": 59.695,
+      "regret": 9.029,
+      "cost": 59.527,
       "probes": 0.16,
       "escalated": 0.014,
-      "balanced": 0.40496079024594334
+      "balanced": 0.4095882829969937
     },
     {
       "factor": 5,
@@ -122,46 +122,46 @@
     }
   ],
   "openai": {
-    "regret": 8.2275,
-    "cost": 59.1695,
+    "regret": 7.7735,
+    "cost": 58.7155,
     "probes": 0.468,
     "escalated": 0.028,
     "per_class": {
-      "live": 0.9859154929577465,
-      "revoked": 0.08527131782945736,
-      "fake": 0.9389312977099237,
-      "zero_scope": 0.2857142857142857,
-      "other": 0.0
+      "live": 0.9953051643192489,
+      "revoked": 0.14728682170542637,
+      "fake": 0.9236641221374046,
+      "zero_scope": 0.23809523809523808,
+      "other": 0.16666666666666666
     },
-    "balanced": 0.4591664788422826
+    "balanced": 0.4942036025847969
   },
   "aws": {
-    "regret": 2.77075,
-    "cost": 52.42875,
-    "probes": 0.04,
+    "regret": 2.69,
+    "cost": 52.33,
+    "probes": 0.034,
     "escalated": 0.022,
     "per_class": {
       "live": 0.9812206572769953,
-      "revoked": 0.9612403100775194,
-      "fake": 0.9541984732824428,
+      "revoked": 0.9689922480620154,
+      "fake": 0.9618320610687023,
       "zero_scope": 0.0,
       "other": 0.0
     },
-    "balanced": 0.5793318881273916
+    "balanced": 0.5824089932815426
   },
   "openai_oracle": {
-    "regret": 1.47425,
-    "cost": 51.66625,
+    "regret": 1.3955,
+    "cost": 51.5875,
     "probes": 0.218,
-    "escalated": 0.022,
+    "escalated": 0.018,
     "per_class": {
       "live": 0.9953051643192489,
       "revoked": 0.9922480620155039,
       "fake": 0.9541984732824428,
       "zero_scope": 0.2857142857142857,
-      "other": 0.0
+      "other": 0.16666666666666666
     },
-    "balanced": 0.6454931970662963
+    "balanced": 0.6788265303996296
   },
   "aws_noscope": {
     "regret": 2.54075,
@@ -191,8 +191,8 @@
     },
     "balanced": 0.38178190392130873
   },
-  "lr_ceiling": 6.7532499999999995,
-  "recovered": 0.8080183615296339,
+  "lr_ceiling": 6.378,
+  "recovered": 0.7970366886171215,
   "mutual_information": {
     "repository context": {
       "live vs revoked": 0.0,
@@ -211,7 +211,7 @@
     }
   },
   "scope_value": {
-    "openai": 2.2707500000000014,
-    "aws": -0.22999999999999998
+    "openai": 2.7247500000000002,
+    "aws": -0.14924999999999988
   }
 }

@@ -83,12 +83,12 @@ def five_questions():
     rows = [
         dict(question="Is the string on a production-looking path?",
              answers="placeholder / neutral / production",
-             tables=[W.L_CONTEXT], spaces=[R.CONTEXT], cost=0.0,
+             tables=[W.L_CONTEXT], spaces=[R.CONTEXT], cost=0.0, spent=True,
              time="milliseconds, already read",
              note="Free, and already counted in the belief this table is computed from."),
         dict(question="Does the string match the provider's key format?",
              answers="well-formed / malformed",
-             tables=[W.L_FORM], spaces=[R.FORM], cost=0.0,
+             tables=[W.L_FORM], spaces=[R.FORM], cost=0.0, spent=True,
              time="milliseconds, one regex",
              note="Free, and likewise already in the belief."),
         dict(question="Is the commit older than the rotation period?",
@@ -109,7 +109,16 @@ def five_questions():
              note="A match is near-proof of live. A miss is only as informative as the provisioning pipeline is complete."),
     ]
     for r in rows:
-        r["eig"] = eig(r["tables"], r["spaces"])
+        # A channel already folded into `b` is worth nothing to ask AGAIN, in
+        # bits as well as in minutes. Re-applying its table to a belief that
+        # already contains it measures a hypothetical second independent draw
+        # of an observation we are holding, which is not the question the row
+        # asks. The published table said 0.0199 and 0.0380 bits for the two
+        # free features while the prose beneath it said they were 0.0000 by
+        # construction; the prose was right about the minutes and the bits
+        # column contradicted it.
+        r["spent"] = r.get("spent", False)
+        r["eig"] = 0.0 if r["spent"] else eig(r["tables"], r["spaces"])
         r["evsi"] = evsi(r["tables"], r["spaces"])
         r["net"] = r["evsi"] - r["cost"]
         r["ask"] = r["net"] > 0

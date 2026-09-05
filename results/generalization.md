@@ -38,21 +38,21 @@ when the identifier becomes public. It moves.**
 
 | | OpenAI (Week 2 agent) | AWS (same agent) |
 |---|---|---|
-| regret, min/finding | 8.23 | 2.77 |
-| total cost, min/finding | 59.17 | 52.43 |
-| probe bought | 46.8% | 4.0% |
+| regret, min/finding | 7.77 | 2.69 |
+| total cost, min/finding | 58.72 | 52.33 |
+| probe bought | 46.8% | 3.4% |
 | sent to a human | 2.8% | 2.2% |
-| balanced accuracy | 0.459 | 0.579 |
-| `live` recall | 0.986 | 0.981 |
-| `revoked` recall | 0.085 | 0.961 |
-| `fake` recall | 0.939 | 0.954 |
-| `zero_scope` recall | 0.286 | 0.000 |
-| `other` recall | 0.000 | 0.000 |
+| balanced accuracy | 0.494 | 0.582 |
+| `live` recall | 0.995 | 0.981 |
+| `revoked` recall | 0.147 | 0.969 |
+| `fake` recall | 0.924 | 0.962 |
+| `zero_scope` recall | 0.238 | 0.000 |
+| `other` recall | 0.167 | 0.000 |
 
-Regret falls from 8.23 to 2.77 minutes
+Regret falls from 7.77 to 2.69 minutes
 per finding. W2-5 priced perfect live-versus-revoked knowledge at
-6.75 minutes of the available regret; the free identifier
-recovers **80.8%** of it, at zero cost, on every
+6.38 minutes of the available regret; the free identifier
+recovers **79.7%** of it, at zero cost, on every
 finding rather than on the minority where a probe was worth buying.
 
 ## A component that survives the move and stops earning its place
@@ -68,8 +68,8 @@ left for scope is the 12%:
 
 | | value of reading scope, min/finding | `zero_scope` recall |
 |---|---|---|
-| OpenAI | +2.27 | 0.286 |
-| AWS | -0.23 | 0.000 |
+| OpenAI | +2.72 | 0.238 |
+| AWS | -0.15 | 0.000 |
 
 **Twelve per cent is not enough to pay for the call.** The field goes
 from earning 2.27 minutes a finding to costing 0.23, and it never
@@ -101,7 +101,7 @@ stand on its own.
 | Escalation as a rule rather than a priced action | **Yes.** It triggers on `other` and on worst-case cost, neither of which the identifier touches |
 | Buy evidence only when an outcome could change the action | **Yes.** It is the reason the probe is not bought here despite still being informative |
 | The zero-bits invariance | **No, and this is the finding.** It is a property of the credential format, not of secret scanning. It survives as a *different* invariance on a different pair of states |
-| The probe as the project's central mechanism | **No.** It is bought on 4.0% of findings here against 46.8% |
+| The probe as the project's central mechanism | **No.** It is bought on 3.4% of findings here against 46.8% |
 | The scope field as a purchase | **No.** Its `absent` column is supplied free here; the 12% that remains does not pay for the call |
 | `zero_scope` as an unresolved state | **Yes, and it gets worse.** Recall falls to 0.000, because the one channel that touched it no longer earns its way into the policy |
 
@@ -118,10 +118,10 @@ for a hundredfold increase is asking for a probability of 10.
 
 | Factor | p_exploit | Cost of dismissing a live key | Regret | Probe bought | Human | Balanced acc. |
 |---|---|---|---|---|---|---|
-| x1 | 0.10 | 244 | 8.23 | 46.8% | 2.8% | 0.459 |
-| x2.5 | 0.25 | 604 | 15.56 | 46.8% | 27.4% | 0.197 |
-| x5 | 0.50 | 1202 | 15.28 | 58.2% | 26.6% | 0.198 |
-| x10 | 1.00 | 2400 | 11.70 | 46.8% | 12.6% | 0.197 |
+| x1 | 0.10 | 244 | 7.77 | 46.8% | 2.8% | 0.494 |
+| x2.5 | 0.25 | 604 | 15.04 | 46.8% | 27.2% | 0.232 |
+| x5 | 0.50 | 1202 | 15.88 | 58.2% | 27.4% | 0.195 |
+| x10 | 1.00 | 2400 | 11.13 | 46.8% | 12.2% | 0.232 |
 
 **Regret is worst in the middle, not at the top**, and so is human
 load: 27.4% of findings escalated at p = 0.25 against 12.6% at p = 1.00,
@@ -159,8 +159,8 @@ on purpose.
 
 | Factor | Probe price, min | Regret | Probe bought | Human | Balanced acc. |
 |---|---|---|---|---|---|
-| x1 | 3 | 8.23 | 46.8% | 2.8% | 0.459 |
-| x2 | 6 | 9.20 | 16.0% | 1.4% | 0.405 |
+| x1 | 3 | 7.77 | 46.8% | 2.8% | 0.494 |
+| x2 | 6 | 9.03 | 16.0% | 1.4% | 0.410 |
 | x5 | 15 | 10.50 | 0.0% | 1.0% | 0.382 |
 | x10 | 30 | 10.50 | 0.0% | 1.0% | 0.382 |
 | x20 | 60 | 10.50 | 0.0% | 1.0% | 0.382 |
