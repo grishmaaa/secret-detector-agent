@@ -82,13 +82,14 @@ The second half is the part I care about. A rule that wins under every assumptio
 | W2-2 | Information value against information cost | Bits and value rank evidence in near-opposite orders. The belief where the probe carries most information is the belief where it is worth nothing |
 | W2-3 | Five states, 500 cases, P0–P3, calibration | Adding the missing states alone changed nothing — identical actions on all 500 cases |
 | W2-4a | A scope field on the admin probe | The state plus the field that resolves it took regret 10.91 → 8.43 |
-| W2-4b | Three fixes: `p_exploit`, escalation as a rule, a cost ceiling | the cost of dismissing a live key, 2400, had an unstated `p_exploit = 1.0`. Making it explicit at 0.10 took `fake` recall 0.000 → 0.954 and balanced accuracy 0.300 → 0.467 |
-| W2-4c | Failure analysis, asymmetric feedback, a JS drift alarm | Asymmetric discovery drifts P(live) from 0.4356 to 0.2691 — the agent learns the world is safer than it is. The alarm catches it at 100% on a 500-window |
+| W2-4b | Three fixes: `p_exploit`, escalation as a rule, a cost ceiling | the cost of dismissing a live key, 2400, had an unstated `p_exploit = 1.0`. Making it explicit at 0.10 took `fake` recall 0.000 → **0.588**; the three fixes together reach 0.95 ± 0.02, and balanced accuracy 0.300 → 0.48 ± 0.02 |
+| W2-4c | Failure analysis, asymmetric feedback, a JS drift alarm | Asymmetric discovery drifts P(live) from 0.4356 to 0.2691 — the agent learns the world is safer than it is. The alarm catches a shift in the `fake` rate at 100% on a 500-window and **cannot see this drift at all**, because it watches the free features and those carry zero bits about live vs revoked |
 | W2-5 | Regret decomposition and a 15-cell cost sweep | The costs are **not** mis-specified. The 76.6% "wrong cost assumption" category was mis-labelled and is irreducible hedging |
 | W2-6 | Age and registry channels (*c*, *k*); scope reliability (*q*) | Commit age is free evidence that breaks the invariance. The Week 1 result is a property of *static text*, not of repository evidence. And 88% of the scope field's value comes from a column I copied rather than the number I invented |
 | W2-7 | A simulator whose world disagrees with the agent | Policy conclusions survive mis-specification in 100% of worlds. The structural conclusion does not |
 | W2-8 | Bayes-factor model comparison, H0 vs H1 | The broken invariance is detectable in 100% of runs at δ ≥ 0.10, from the agent's own biased feedback. The skew costs nothing; the sample size costs everything |
-| W2-9 | The Week 2 paper | Not started |
+| W2-9 | Generalisation, the worked pieces, and the paper | The invariance does not die when the credential format changes -- it relocates onto a different pair of states, worth 0.0000 bits again |
+| W2-10 | An adversarial review round against the finished draft | Eleven confirmed defects. Four changed a published number, one deleted a result, one added an experiment. In four cases the results file was already more careful than the paper written from it |
 
 Everything in Week 2 is an experiment plus a write-up. The results are in `results/`, one markdown file and one JSON file per experiment.
 
@@ -145,6 +146,13 @@ python misspecified.py       # a world that disagrees with the agent, ~2 min
                              # -> results/misspecified.{md,json}
 python model_uncertainty.py  # Bayes factor, H0 vs H1, ~3 min
                              # -> results/model-uncertainty.{md,json}
+python worked_examples.py    # one Bayes update by hand, five questions priced,
+                             # the umbrella problem
+                             # -> results/worked-examples.{md,json}
+python generalization.py     # a credential with a public identifier
+                             # -> results/generalization.{md,json}
+python stability.py          # 200 scope-draw seeds, intervals on every headline
+                             # -> results/stability.{md,json}
 ```
 
 `data/cases.json` is committed and is not regenerated while it exists. Delete it

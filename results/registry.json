@@ -1,731 +1,731 @@
 {
-  "base": 8.2275,
-  "lr_ceiling": 6.7532499999999995,
-  "total_ceiling": 8.2275,
+  "base": 7.7735,
+  "lr_ceiling": 6.378,
+  "total_ceiling": 7.7735,
   "grid": [
     [
       {
         "k": 0.0,
         "c": 0.0,
-        "regret": 1.80875,
-        "cost": 51.68875,
-        "probes": 0.114,
-        "registry": 0.0,
-        "recovered": 0.9504682930440899
+        "regret": 1.829,
+        "cost": 51.741,
+        "probes": 0.124,
+        "registry": 0.002,
+        "recovered": 0.9320319849482597
       },
       {
         "k": 0.2,
         "c": 0.0,
-        "regret": 1.80875,
-        "cost": 51.68875,
-        "probes": 0.114,
-        "registry": 0.0,
-        "recovered": 0.9504682930440899
+        "regret": 1.829,
+        "cost": 51.741,
+        "probes": 0.124,
+        "registry": 0.002,
+        "recovered": 0.9320319849482597
       },
       {
         "k": 0.4,
         "c": 0.0,
-        "regret": 1.80875,
-        "cost": 51.68875,
-        "probes": 0.114,
-        "registry": 0.0,
-        "recovered": 0.9504682930440899
+        "regret": 1.829,
+        "cost": 51.741,
+        "probes": 0.124,
+        "registry": 0.002,
+        "recovered": 0.9320319849482597
       },
       {
         "k": 0.5,
         "c": 0.0,
-        "regret": 1.80875,
-        "cost": 51.68875,
-        "probes": 0.114,
-        "registry": 0.0,
-        "recovered": 0.9504682930440899
+        "regret": 1.829,
+        "cost": 51.741,
+        "probes": 0.124,
+        "registry": 0.002,
+        "recovered": 0.9320319849482597
       },
       {
         "k": 0.6,
         "c": 0.0,
-        "regret": 1.80875,
-        "cost": 51.68875,
-        "probes": 0.114,
-        "registry": 0.0,
-        "recovered": 0.9504682930440899
+        "regret": 1.829,
+        "cost": 51.741,
+        "probes": 0.124,
+        "registry": 0.002,
+        "recovered": 0.9320319849482597
       },
       {
         "k": 0.8,
         "c": 0.0,
-        "regret": 1.7195,
-        "cost": 51.5475,
-        "probes": 0.088,
-        "registry": 0.026,
-        "recovered": 0.9636841520749269
+        "regret": 1.89425,
+        "cost": 51.75425,
+        "probes": 0.098,
+        "registry": 0.028,
+        "recovered": 0.9218015051740358
       },
       {
         "k": 0.95,
         "c": 0.0,
-        "regret": 1.913,
-        "cost": 51.793,
-        "probes": 0.092,
-        "registry": 0.066,
-        "recovered": 0.9350312812349608
+        "regret": 1.865,
+        "cost": 51.775,
+        "probes": 0.098,
+        "registry": 0.078,
+        "recovered": 0.926387582314205
       },
       {
         "k": 1.0,
         "c": 0.0,
-        "regret": 1.53975,
-        "cost": 51.42375,
+        "regret": 1.50375,
+        "cost": 51.38375,
         "probes": 0.0,
-        "registry": 0.346,
-        "recovered": 0.9903009662014586
+        "registry": 0.342,
+        "recovered": 0.983027594857322
       }
     ],
     [
       {
         "k": 0.0,
         "c": 0.2,
-        "regret": 6.04725,
-        "cost": 56.93725,
-        "probes": 0.45,
-        "registry": 0.002,
-        "recovered": 0.3228445563247324
+        "regret": 6.6725,
+        "cost": 57.6725,
+        "probes": 0.486,
+        "registry": 0.004,
+        "recovered": 0.17262464722483536
       },
       {
         "k": 0.2,
         "c": 0.2,
-        "regret": 5.73775,
-        "cost": 56.81575,
-        "probes": 0.468,
-        "registry": 0.136,
-        "recovered": 0.3686743419834893
+        "regret": 6.6725,
+        "cost": 57.8285,
+        "probes": 0.486,
+        "registry": 0.16,
+        "recovered": 0.17262464722483536
       },
       {
         "k": 0.4,
         "c": 0.2,
-        "regret": 4.94275,
-        "cost": 56.02075,
-        "probes": 0.468,
-        "registry": 0.136,
-        "recovered": 0.4863954392329618
+        "regret": 5.0825,
+        "cost": 56.2385,
+        "probes": 0.486,
+        "registry": 0.16,
+        "recovered": 0.42191909689557866
       },
       {
         "k": 0.5,
         "c": 0.2,
-        "regret": 5.07575,
-        "cost": 56.16375,
-        "probes": 0.458,
+        "regret": 5.11175,
+        "cost": 56.28375,
+        "probes": 0.486,
         "registry": 0.176,
-        "recovered": 0.4667012179321066
+        "recovered": 0.4173330197554093
       },
       {
         "k": 0.6,
         "c": 0.2,
-        "regret": 5.29225,
-        "cost": 56.44425,
-        "probes": 0.448,
-        "registry": 0.27,
-        "recovered": 0.43464257949875973
+        "regret": 5.5925,
+        "cost": 56.7325,
+        "probes": 0.452,
+        "registry": 0.246,
+        "recovered": 0.3419567262464723
       },
       {
         "k": 0.8,
         "c": 0.2,
-        "regret": 5.049,
-        "cost": 55.817,
-        "probes": 0.286,
-        "registry": 0.372,
-        "recovered": 0.4706622737200606
+        "regret": 4.13925,
+        "cost": 55.00325,
+        "probes": 0.306,
+        "registry": 0.408,
+        "recovered": 0.569810285355911
       },
       {
         "k": 0.95,
         "c": 0.2,
-        "regret": 4.134,
-        "cost": 54.296,
-        "probes": 0.042,
-        "registry": 0.498,
-        "recovered": 0.6061525931958686
+        "regret": 3.55375,
+        "cost": 53.74375,
+        "probes": 0.05,
+        "registry": 0.502,
+        "recovered": 0.6616102226403262
       },
       {
         "k": 1.0,
         "c": 0.2,
-        "regret": 1.5315,
-        "cost": 51.9555,
+        "regret": 1.55675,
+        "cost": 51.98075,
         "probes": 0.0,
         "registry": 0.886,
-        "recovered": 0.991522600229519
+        "recovered": 0.9747177798682973
       }
     ],
     [
       {
         "k": 0.0,
         "c": 0.4,
-        "regret": 7.948,
-        "cost": 59.464,
-        "probes": 0.658,
+        "regret": 8.07225,
+        "cost": 59.52825,
+        "probes": 0.638,
         "registry": 0.004,
-        "recovered": 0.041387480102172844
+        "recovered": -0.046840702414550024
       },
       {
         "k": 0.2,
         "c": 0.4,
-        "regret": 7.948,
-        "cost": 59.464,
-        "probes": 0.658,
+        "regret": 8.07225,
+        "cost": 59.52825,
+        "probes": 0.638,
         "registry": 0.004,
-        "recovered": 0.041387480102172844
+        "recovered": -0.046840702414550024
       },
       {
         "k": 0.4,
         "c": 0.4,
-        "regret": 8.002,
-        "cost": 59.474,
-        "probes": 0.636,
-        "registry": 0.026,
-        "recovered": 0.033391330100321845
+        "regret": 8.1015,
+        "cost": 59.5735,
+        "probes": 0.638,
+        "registry": 0.02,
+        "recovered": -0.051426779554719255
       },
       {
         "k": 0.5,
         "c": 0.4,
-        "regret": 6.942,
-        "cost": 58.56,
-        "probes": 0.636,
-        "registry": 0.172,
-        "recovered": 0.19035279309961856
+        "regret": 6.1275,
+        "cost": 57.7075,
+        "probes": 0.61,
+        "registry": 0.212,
+        "recovered": 0.2580746315459391
       },
       {
         "k": 0.6,
         "c": 0.4,
-        "regret": 6.677,
-        "cost": 58.295,
-        "probes": 0.636,
-        "registry": 0.172,
-        "recovered": 0.2295931588494428
+        "regret": 6.1275,
+        "cost": 57.7075,
+        "probes": 0.61,
+        "registry": 0.212,
+        "recovered": 0.2580746315459391
       },
       {
         "k": 0.8,
         "c": 0.4,
-        "regret": 4.17425,
-        "cost": 55.82625,
-        "probes": 0.614,
-        "registry": 0.272,
-        "recovered": 0.6001924999074519
+        "regret": 5.20425,
+        "cost": 56.83025,
+        "probes": 0.596,
+        "registry": 0.3,
+        "recovered": 0.4028300407651302
       },
       {
         "k": 0.95,
         "c": 0.4,
-        "regret": 3.0385,
-        "cost": 54.0805,
+        "regret": 2.70275,
+        "cost": 53.76875,
+        "probes": 0.214,
+        "registry": 0.886,
+        "recovered": 0.7950376293508937
+      },
+      {
+        "k": 1.0,
+        "c": 0.4,
+        "regret": 1.55675,
+        "cost": 51.98075,
+        "probes": 0.0,
+        "registry": 0.886,
+        "recovered": 0.9747177798682973
+      }
+    ],
+    [
+      {
+        "k": 0.0,
+        "c": 0.5,
+        "regret": 7.7735,
+        "cost": 58.7235,
+        "probes": 0.468,
+        "registry": 0.008,
+        "recovered": 0.0
+      },
+      {
+        "k": 0.2,
+        "c": 0.5,
+        "regret": 7.7735,
+        "cost": 58.7235,
+        "probes": 0.468,
+        "registry": 0.008,
+        "recovered": 0.0
+      },
+      {
+        "k": 0.4,
+        "c": 0.5,
+        "regret": 7.98325,
+        "cost": 58.83925,
+        "probes": 0.424,
+        "registry": 0.046,
+        "recovered": -0.032886484791470626
+      },
+      {
+        "k": 0.5,
+        "c": 0.5,
+        "regret": 7.98325,
+        "cost": 58.83925,
+        "probes": 0.424,
+        "registry": 0.046,
+        "recovered": -0.032886484791470626
+      },
+      {
+        "k": 0.6,
+        "c": 0.5,
+        "regret": 7.98325,
+        "cost": 58.83925,
+        "probes": 0.424,
+        "registry": 0.046,
+        "recovered": -0.032886484791470626
+      },
+      {
+        "k": 0.8,
+        "c": 0.5,
+        "regret": 7.8515,
+        "cost": 58.8175,
+        "probes": 0.424,
+        "registry": 0.156,
+        "recovered": -0.01222953904045146
+      },
+      {
+        "k": 0.95,
+        "c": 0.5,
+        "regret": 2.49375,
+        "cost": 53.75775,
+        "probes": 0.28,
+        "registry": 0.886,
+        "recovered": 0.8278065224208215
+      },
+      {
+        "k": 1.0,
+        "c": 0.5,
+        "regret": 1.55675,
+        "cost": 51.98075,
+        "probes": 0.0,
+        "registry": 0.886,
+        "recovered": 0.9747177798682973
+      }
+    ],
+    [
+      {
+        "k": 0.0,
+        "c": 0.6,
+        "regret": 7.284,
+        "cost": 58.74,
+        "probes": 0.638,
+        "registry": 0.004,
+        "recovered": 0.07674819692693642
+      },
+      {
+        "k": 0.2,
+        "c": 0.6,
+        "regret": 7.284,
+        "cost": 58.74,
+        "probes": 0.638,
+        "registry": 0.004,
+        "recovered": 0.07674819692693642
+      },
+      {
+        "k": 0.4,
+        "c": 0.6,
+        "regret": 7.31325,
+        "cost": 58.79725,
+        "probes": 0.638,
+        "registry": 0.032,
+        "recovered": 0.07216211978676705
+      },
+      {
+        "k": 0.5,
+        "c": 0.6,
+        "regret": 6.792,
+        "cost": 58.37,
+        "probes": 0.622,
+        "registry": 0.174,
+        "recovered": 0.15388836625901545
+      },
+      {
+        "k": 0.6,
+        "c": 0.6,
+        "regret": 6.527,
+        "cost": 58.105,
+        "probes": 0.622,
+        "registry": 0.174,
+        "recovered": 0.19543744120413925
+      },
+      {
+        "k": 0.8,
+        "c": 0.6,
+        "regret": 6.07775,
+        "cost": 57.73975,
+        "probes": 0.608,
+        "registry": 0.3,
+        "recovered": 0.2658748824082785
+      },
+      {
+        "k": 0.95,
+        "c": 0.6,
+        "regret": 2.58275,
+        "cost": 53.62475,
         "probes": 0.206,
         "registry": 0.886,
-        "recovered": 0.7683707844371228
-      },
-      {
-        "k": 1.0,
-        "c": 0.4,
-        "regret": 1.5315,
-        "cost": 51.9555,
-        "probes": 0.0,
-        "registry": 0.886,
-        "recovered": 0.991522600229519
-      }
-    ],
-    [
-      {
-        "k": 0.0,
-        "c": 0.5,
-        "regret": 8.2115,
-        "cost": 59.1555,
-        "probes": 0.468,
-        "registry": 0.002,
-        "recovered": 0.0023692296301780647
-      },
-      {
-        "k": 0.2,
-        "c": 0.5,
-        "regret": 8.2115,
-        "cost": 59.1555,
-        "probes": 0.468,
-        "registry": 0.002,
-        "recovered": 0.0023692296301780647
-      },
-      {
-        "k": 0.4,
-        "c": 0.5,
-        "regret": 8.033,
-        "cost": 58.889,
-        "probes": 0.424,
-        "registry": 0.046,
-        "recovered": 0.028800947691852024
-      },
-      {
-        "k": 0.5,
-        "c": 0.5,
-        "regret": 8.033,
-        "cost": 58.889,
-        "probes": 0.424,
-        "registry": 0.046,
-        "recovered": 0.028800947691852024
-      },
-      {
-        "k": 0.6,
-        "c": 0.5,
-        "regret": 8.033,
-        "cost": 58.889,
-        "probes": 0.424,
-        "registry": 0.046,
-        "recovered": 0.028800947691852024
-      },
-      {
-        "k": 0.8,
-        "c": 0.5,
-        "regret": 7.325,
-        "cost": 58.295,
-        "probes": 0.424,
-        "registry": 0.16,
-        "recovered": 0.13363935882723119
-      },
-      {
-        "k": 0.95,
-        "c": 0.5,
-        "regret": 2.64525,
-        "cost": 53.89725,
-        "probes": 0.276,
-        "registry": 0.886,
-        "recovered": 0.826602006441343
-      },
-      {
-        "k": 1.0,
-        "c": 0.5,
-        "regret": 1.5315,
-        "cost": 51.9555,
-        "probes": 0.0,
-        "registry": 0.886,
-        "recovered": 0.991522600229519
-      }
-    ],
-    [
-      {
-        "k": 0.0,
-        "c": 0.6,
-        "regret": 7.518,
-        "cost": 59.006,
-        "probes": 0.648,
-        "registry": 0.006,
-        "recovered": 0.10506052641320837
-      },
-      {
-        "k": 0.2,
-        "c": 0.6,
-        "regret": 7.518,
-        "cost": 59.006,
-        "probes": 0.648,
-        "registry": 0.006,
-        "recovered": 0.10506052641320837
-      },
-      {
-        "k": 0.4,
-        "c": 0.6,
-        "regret": 7.73775,
-        "cost": 59.20775,
-        "probes": 0.636,
-        "registry": 0.024,
-        "recovered": 0.07252063821123149
-      },
-      {
-        "k": 0.5,
-        "c": 0.6,
-        "regret": 7.45375,
-        "cost": 59.04975,
-        "probes": 0.628,
-        "registry": 0.174,
-        "recovered": 0.11457446414689207
-      },
-      {
-        "k": 0.6,
-        "c": 0.6,
-        "regret": 7.18875,
-        "cost": 58.78475,
-        "probes": 0.628,
-        "registry": 0.174,
-        "recovered": 0.15381482989671633
-      },
-      {
-        "k": 0.8,
-        "c": 0.6,
-        "regret": 6.03125,
-        "cost": 57.68925,
-        "probes": 0.612,
-        "registry": 0.284,
-        "recovered": 0.3252137859549105
-      },
-      {
-        "k": 0.95,
-        "c": 0.6,
-        "regret": 3.129,
-        "cost": 54.207,
-        "probes": 0.218,
-        "registry": 0.886,
-        "recovered": 0.7549698293414282
+        "recovered": 0.8138523047977423
       },
       {
         "k": 1.0,
         "c": 0.6,
-        "regret": 1.5315,
-        "cost": 51.9555,
+        "regret": 1.55675,
+        "cost": 51.98075,
         "probes": 0.0,
         "registry": 0.886,
-        "recovered": 0.991522600229519
+        "recovered": 0.9747177798682973
       }
     ],
     [
       {
         "k": 0.0,
         "c": 0.8,
-        "regret": 5.58725,
-        "cost": 56.54525,
-        "probes": 0.472,
+        "regret": 5.7805,
+        "cost": 56.7025,
+        "probes": 0.46,
         "registry": 0.004,
-        "recovered": 0.3909599081923517
+        "recovered": 0.3124804013797429
       },
       {
         "k": 0.2,
         "c": 0.8,
-        "regret": 5.66825,
-        "cost": 56.74425,
+        "regret": 5.7805,
+        "cost": 56.8265,
+        "probes": 0.46,
+        "registry": 0.128,
+        "recovered": 0.3124804013797429
+      },
+      {
+        "k": 0.4,
+        "c": 0.8,
+        "regret": 5.7805,
+        "cost": 56.8265,
+        "probes": 0.46,
+        "registry": 0.128,
+        "recovered": 0.3124804013797429
+      },
+      {
+        "k": 0.5,
+        "c": 0.8,
+        "regret": 5.27975,
+        "cost": 56.35575,
         "probes": 0.46,
         "registry": 0.158,
-        "recovered": 0.37896568318957535
-      },
-      {
-        "k": 0.4,
-        "c": 0.8,
-        "regret": 5.18425,
-        "cost": 56.26025,
-        "probes": 0.46,
-        "registry": 0.158,
-        "recovered": 0.4506348795024617
-      },
-      {
-        "k": 0.5,
-        "c": 0.8,
-        "regret": 5.6985,
-        "cost": 56.7565,
-        "probes": 0.448,
-        "registry": 0.176,
-        "recovered": 0.37448635842001987
+        "recovered": 0.3909924741298213
       },
       {
         "k": 0.6,
         "c": 0.8,
-        "regret": 5.2405,
-        "cost": 56.2965,
-        "probes": 0.426,
-        "registry": 0.24,
-        "recovered": 0.44230555658386694
+        "regret": 4.92675,
+        "cost": 56.00675,
+        "probes": 0.432,
+        "registry": 0.246,
+        "recovered": 0.4463389777359674
       },
       {
         "k": 0.8,
         "c": 0.8,
-        "regret": 5.0145,
-        "cost": 55.8605,
-        "probes": 0.296,
-        "registry": 0.42,
-        "recovered": 0.4757709251101321
+        "regret": 4.67425,
+        "cost": 55.45625,
+        "probes": 0.278,
+        "registry": 0.41,
+        "recovered": 0.48592819065537796
       },
       {
         "k": 0.95,
         "c": 0.8,
-        "regret": 3.7605,
-        "cost": 53.9625,
-        "probes": 0.052,
-        "registry": 0.508,
-        "recovered": 0.6614592973753377
+        "regret": 4.28525,
+        "cost": 54.41925,
+        "probes": 0.036,
+        "registry": 0.488,
+        "recovered": 0.5469190968955786
       },
       {
         "k": 1.0,
         "c": 0.8,
-        "regret": 1.5315,
-        "cost": 51.9555,
+        "regret": 1.55675,
+        "cost": 51.98075,
         "probes": 0.0,
         "registry": 0.886,
-        "recovered": 0.991522600229519
+        "recovered": 0.9747177798682973
       }
     ],
     [
       {
         "k": 0.0,
         "c": 0.95,
-        "regret": 3.94375,
-        "cost": 54.60775,
-        "probes": 0.374,
-        "registry": 0.004,
-        "recovered": 0.6343242142672046
+        "regret": 4.1185,
+        "cost": 54.7305,
+        "probes": 0.358,
+        "registry": 0.0,
+        "recovered": 0.5730636563185952
       },
       {
         "k": 0.2,
         "c": 0.95,
-        "regret": 3.6585,
-        "cost": 54.3385,
-        "probes": 0.37,
-        "registry": 0.032,
-        "recovered": 0.6765631362677229
+        "regret": 4.1185,
+        "cost": 54.7665,
+        "probes": 0.358,
+        "registry": 0.036,
+        "recovered": 0.5730636563185952
       },
       {
         "k": 0.4,
         "c": 0.95,
-        "regret": 3.62725,
-        "cost": 54.50125,
-        "probes": 0.378,
-        "registry": 0.202,
-        "recovered": 0.6811905378891644
+        "regret": 3.7085,
+        "cost": 54.5225,
+        "probes": 0.356,
+        "registry": 0.208,
+        "recovered": 0.6373471307619945
       },
       {
         "k": 0.5,
         "c": 0.95,
-        "regret": 3.36675,
-        "cost": 53.59675,
-        "probes": 0.124,
-        "registry": 0.32,
-        "recovered": 0.719764557805501
+        "regret": 3.89925,
+        "cost": 54.06525,
+        "probes": 0.094,
+        "registry": 0.346,
+        "recovered": 0.6074396362496081
       },
       {
         "k": 0.6,
         "c": 0.95,
-        "regret": 3.16175,
-        "cost": 53.39175,
-        "probes": 0.124,
-        "registry": 0.32,
-        "recovered": 0.7501203124421575
+        "regret": 3.36925,
+        "cost": 53.53525,
+        "probes": 0.094,
+        "registry": 0.346,
+        "recovered": 0.6905377861398557
       },
       {
         "k": 0.8,
         "c": 0.95,
-        "regret": 3.1325,
-        "cost": 53.3065,
-        "probes": 0.096,
-        "registry": 0.348,
-        "recovered": 0.7544515603598266
+        "regret": 2.39425,
+        "cost": 52.52825,
+        "probes": 0.078,
+        "registry": 0.362,
+        "recovered": 0.8434070241455003
       },
       {
         "k": 0.95,
         "c": 0.95,
-        "regret": 2.6435,
-        "cost": 52.8315,
+        "regret": 2.32625,
+        "cost": 52.52225,
+        "probes": 0.076,
+        "registry": 0.43,
+        "recovered": 0.8540686735653811
+      },
+      {
+        "k": 1.0,
+        "c": 0.95,
+        "regret": 2.0315,
+        "cost": 52.2275,
+        "probes": 0.0,
+        "registry": 0.658,
+        "recovered": 0.9002822201317029
+      }
+    ],
+    [
+      {
+        "k": 0.0,
+        "c": 1.0,
+        "regret": 1.961,
+        "cost": 51.793,
+        "probes": 0.098,
+        "registry": 0.0,
+        "recovered": 0.9113358419567262
+      },
+      {
+        "k": 0.2,
+        "c": 1.0,
+        "regret": 1.961,
+        "cost": 51.793,
+        "probes": 0.098,
+        "registry": 0.0,
+        "recovered": 0.9113358419567262
+      },
+      {
+        "k": 0.4,
+        "c": 1.0,
+        "regret": 1.961,
+        "cost": 51.793,
+        "probes": 0.098,
+        "registry": 0.0,
+        "recovered": 0.9113358419567262
+      },
+      {
+        "k": 0.5,
+        "c": 1.0,
+        "regret": 1.961,
+        "cost": 51.793,
+        "probes": 0.098,
+        "registry": 0.0,
+        "recovered": 0.9113358419567262
+      },
+      {
+        "k": 0.6,
+        "c": 1.0,
+        "regret": 1.961,
+        "cost": 51.793,
+        "probes": 0.098,
+        "registry": 0.0,
+        "recovered": 0.9113358419567262
+      },
+      {
+        "k": 0.8,
+        "c": 1.0,
+        "regret": 1.78775,
+        "cost": 51.58775,
         "probes": 0.082,
-        "registry": 0.404,
-        "recovered": 0.8268611409321438
-      },
-      {
-        "k": 1.0,
-        "c": 0.95,
-        "regret": 1.95225,
-        "cost": 52.15825,
-        "probes": 0.0,
-        "registry": 0.668,
-        "recovered": 0.9292192647984303
-      }
-    ],
-    [
-      {
-        "k": 0.0,
-        "c": 1.0,
-        "regret": 2.02625,
-        "cost": 51.90825,
-        "probes": 0.114,
-        "registry": 0.002,
-        "recovered": 0.9182615777588568
-      },
-      {
-        "k": 0.2,
-        "c": 1.0,
-        "regret": 2.02625,
-        "cost": 51.90825,
-        "probes": 0.114,
-        "registry": 0.002,
-        "recovered": 0.9182615777588568
-      },
-      {
-        "k": 0.4,
-        "c": 1.0,
-        "regret": 2.02625,
-        "cost": 51.90825,
-        "probes": 0.114,
-        "registry": 0.002,
-        "recovered": 0.9182615777588568
-      },
-      {
-        "k": 0.5,
-        "c": 1.0,
-        "regret": 2.02625,
-        "cost": 51.90825,
-        "probes": 0.114,
-        "registry": 0.002,
-        "recovered": 0.9182615777588568
-      },
-      {
-        "k": 0.6,
-        "c": 1.0,
-        "regret": 2.02625,
-        "cost": 51.90825,
-        "probes": 0.114,
-        "registry": 0.002,
-        "recovered": 0.9182615777588568
-      },
-      {
-        "k": 0.8,
-        "c": 1.0,
-        "regret": 1.937,
-        "cost": 51.775,
-        "probes": 0.092,
-        "registry": 0.024,
-        "recovered": 0.9314774367896937
+        "registry": 0.016,
+        "recovered": 0.9384995296331139
       },
       {
         "k": 0.95,
         "c": 1.0,
-        "regret": 1.73825,
-        "cost": 51.61625,
-        "probes": 0.088,
-        "registry": 0.076,
-        "recovered": 0.960907711102062
+        "regret": 1.817,
+        "cost": 51.681,
+        "probes": 0.082,
+        "registry": 0.08,
+        "recovered": 0.9339134524929446
       },
       {
         "k": 1.0,
         "c": 1.0,
-        "regret": 1.473,
-        "cost": 51.349,
+        "regret": 1.59825,
+        "cost": 51.45825,
         "probes": 0.0,
-        "registry": 0.338,
-        "recovered": 1.0001850960648577
+        "registry": 0.322,
+        "recovered": 0.9682110379429288
       }
     ]
   ],
   "age_only": [
     {
       "c": 0.0,
-      "regret": 1.80875,
-      "cost": 51.68875,
-      "probes": 0.114,
+      "regret": 1.829,
+      "cost": 51.739,
+      "probes": 0.124,
       "registry": 0.0,
-      "recovered": 0.9504682930440899
+      "recovered": 0.9320319849482597
     },
     {
       "c": 0.2,
-      "regret": 6.04725,
-      "cost": 56.94125,
-      "probes": 0.452,
+      "regret": 6.6725,
+      "cost": 57.6685,
+      "probes": 0.486,
       "registry": 0.0,
-      "recovered": 0.3228445563247324
+      "recovered": 0.17262464722483536
     },
     {
       "c": 0.4,
-      "regret": 7.958,
-      "cost": 59.482,
-      "probes": 0.662,
+      "regret": 8.07225,
+      "cost": 59.52425,
+      "probes": 0.638,
       "registry": 0.0,
-      "recovered": 0.03990671158331159
+      "recovered": -0.046840702414550024
     },
     {
       "c": 0.5,
-      "regret": 8.2845,
-      "cost": 59.2265,
+      "regret": 7.7735,
+      "cost": 58.7155,
       "probes": 0.468,
       "registry": 0.0,
-      "recovered": -0.008440380557509404
+      "recovered": 0.0
     },
     {
       "c": 0.6,
-      "regret": 7.721,
-      "cost": 59.203,
-      "probes": 0.648,
+      "regret": 7.284,
+      "cost": 58.736,
+      "probes": 0.638,
       "registry": 0.0,
-      "recovered": 0.07500092548032415
+      "recovered": 0.07674819692693642
     },
     {
       "c": 0.8,
-      "regret": 5.47525,
-      "cost": 56.44125,
-      "probes": 0.476,
+      "regret": 5.7805,
+      "cost": 56.6985,
+      "probes": 0.46,
       "registry": 0.0,
-      "recovered": 0.40754451560359817
+      "recovered": 0.3124804013797429
     },
     {
       "c": 0.95,
-      "regret": 3.83775,
-      "cost": 54.50975,
-      "probes": 0.378,
+      "regret": 4.1185,
+      "cost": 54.7305,
+      "probes": 0.358,
       "registry": 0.0,
-      "recovered": 0.6500203605671343
+      "recovered": 0.5730636563185952
     },
     {
       "c": 1.0,
-      "regret": 1.99025,
-      "cost": 51.87625,
-      "probes": 0.116,
+      "regret": 1.961,
+      "cost": 51.793,
+      "probes": 0.098,
       "registry": 0.0,
-      "recovered": 0.9235923444267575
+      "recovered": 0.9113358419567262
     }
   ],
   "registry_only": [
     {
       "k": 0.0,
-      "regret": 7.91275,
-      "cost": 58.85875,
+      "regret": 7.7735,
+      "cost": 58.7235,
       "probes": 0.468,
-      "registry": 0.004,
-      "recovered": 0.04660718913115896
+      "registry": 0.008,
+      "recovered": 0.0
     },
     {
       "k": 0.2,
-      "regret": 7.91275,
-      "cost": 58.85875,
+      "regret": 7.7735,
+      "cost": 58.7235,
       "probes": 0.468,
-      "registry": 0.004,
-      "recovered": 0.04660718913115896
+      "registry": 0.008,
+      "recovered": 0.0
     },
     {
       "k": 0.4,
-      "regret": 7.67425,
-      "cost": 58.53225,
+      "regret": 7.98325,
+      "cost": 58.83925,
       "probes": 0.424,
-      "registry": 0.048,
-      "recovered": 0.08192351830600073
+      "registry": 0.046,
+      "recovered": -0.032886484791470626
     },
     {
       "k": 0.5,
-      "regret": 7.67425,
-      "cost": 58.53225,
+      "regret": 7.98325,
+      "cost": 58.83925,
       "probes": 0.424,
-      "registry": 0.048,
-      "recovered": 0.08192351830600073
+      "registry": 0.046,
+      "recovered": -0.032886484791470626
     },
     {
       "k": 0.6,
-      "regret": 7.67425,
-      "cost": 58.53225,
+      "regret": 7.98325,
+      "cost": 58.83925,
       "probes": 0.424,
-      "registry": 0.048,
-      "recovered": 0.08192351830600073
+      "registry": 0.046,
+      "recovered": -0.032886484791470626
     },
     {
       "k": 0.8,
-      "regret": 7.43225,
-      "cost": 58.40225,
+      "regret": 7.8515,
+      "cost": 58.8175,
       "probes": 0.424,
-      "registry": 0.16,
-      "recovered": 0.11775811646244393
+      "registry": 0.156,
+      "recovered": -0.01222953904045146
     },
     {
       "k": 0.95,
-      "regret": 2.26025,
-      "cost": 53.50025,
-      "probes": 0.272,
+      "regret": 2.49375,
+      "cost": 53.75775,
+      "probes": 0.28,
       "registry": 0.886,
-      "recovered": 0.8836115944175026
+      "recovered": 0.8278065224208215
     },
     {
       "k": 1.0,
-      "regret": 1.645,
-      "cost": 52.069,
+      "regret": 1.55675,
+      "cost": 51.98075,
       "probes": 0.0,
       "registry": 0.886,
-      "recovered": 0.9747158775404435
+      "recovered": 0.9747177798682973
     }
   ],
   "registry_cost": 1.0

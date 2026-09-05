@@ -115,7 +115,7 @@ def make_policy(cost, escalation=False):
     return policy
 
 
-def make_full(cost):
+def make_full(cost, scope_seed=None):
     """P6: everything. Corrected breach cost, escalation as a rule, and the
     scope field on the probe that was already being paid for.
 
@@ -125,7 +125,11 @@ def make_full(cost):
     column for revoked keys and never for live ones.
     """
     import random
-    rng = random.Random(W.SEED + 1)
+    # The scope reading is drawn, so P6 has a nuisance random variable that
+    # nothing else in the policy has. Exposing its seed is what lets
+    # stability.py measure how much of a reported difference is the fix and
+    # how much is this draw -- see results/stability.md.
+    rng = random.Random(W.SEED + 1 if scope_seed is None else scope_seed)
 
     def draw_scope(case):
         r, acc = rng.random(), 0.0
@@ -139,7 +143,13 @@ def make_full(cost):
         ev = {"context": case["context"], "form": case["form"]}
         b = W.posterior(ev)
         extra = 0
-        if S.evsi(b, [W.L_PROBE, S.L_SCOPE], [R.PROBE, S.SCOPE]) > R.K["probe"]:
+        # Price the probe against the SAME matrix the action is chosen with.
+        # Without the third argument this agent decided what to BUY under
+        # dismiss|live = 2400 and then decided what to DO under 244.5 -- the
+        # assumption this whole file exists to remove, left running in the half
+        # of the decision nobody looked at.
+        if S.evsi(b, [W.L_PROBE, S.L_SCOPE], [R.PROBE, S.SCOPE],
+                  cost) > R.K["probe"]:
             b = I.update(b, [W.L_PROBE, S.L_SCOPE], (case["probe"], draw_scope(case)))
             extra = R.K["probe"]
         a = W.cheapest(b, cost)

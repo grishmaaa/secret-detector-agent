@@ -144,7 +144,7 @@
     "other": 0.01
   },
   "cost_learned": 60.47025,
-  "cost_frozen": 61.04165625,
+  "cost_frozen": 60.47025,
   "discovered": 0.50475,
   "trajectory": [
     {

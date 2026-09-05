@@ -142,7 +142,15 @@ def run_feedback(n=4000, seed=77, learn=True):
         a = W.cheapest(b, COST)
         total += COST[a][truth]
 
-        if learn and rng.random() < discovery_p(a, truth):
+        # The discovery draw is taken unconditionally and only USED when the
+        # agent is learning. Guarding the draw itself behind `learn` short-
+        # circuits it in the frozen arm, which then consumes a different number
+        # of random values from this point on and simulates a different
+        # 4,000-finding world. The two arms are meant to differ in one thing;
+        # that made them differ in all of them, and it manufactured a
+        # 0.57 min/finding advantage for learning that does not exist.
+        found = rng.random() < discovery_p(a, truth)
+        if learn and found:
             counts[truth] += 1
             seen += 1
             tot = sum(counts.values())

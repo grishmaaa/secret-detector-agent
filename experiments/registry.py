@@ -129,7 +129,17 @@ def evaluate(cases, k, c, use_reg=True, use_age=True, oracle=False):
     once made uninformative evidence look actively harmful, which it cannot be.
     """
     A, G = l_age(c), l_reg(k)
-    rng = random.Random(4242)
+    # One stream per channel, not one stream for all three. Sharing a single
+    # generator means an arm that switches a channel off consumes a different
+    # number of draws and therefore sees DIFFERENT observations on the channels
+    # it still has. That is the confounding this docstring warns about,
+    # committed in the code directly beneath it: at c = 0.5 the age rows are
+    # identical across states, so the channel is provably uninformative, and
+    # the published table still showed it changing regret by -0.8%. That was
+    # the stream moving, not the evidence.
+    rng_age = random.Random(4242)
+    rng_scope = random.Random(4243)
+    rng_reg = random.Random(4244)
     regret = cost = 0.0
     probes = regs = 0
 
@@ -138,7 +148,7 @@ def evaluate(cases, k, c, use_reg=True, use_age=True, oracle=False):
         tabs, ev = [W.L_CONTEXT, W.L_FORM], [case["context"], case["form"]]
         if use_age:
             tabs.append(A)
-            ev.append(draw(A, t, rng))
+            ev.append(draw(A, t, rng_age))
         b = I.update(dict(W.PRIOR), tabs, tuple(ev))
 
         if oracle:      # perfect knowledge of live vs revoked, nothing else
@@ -166,10 +176,10 @@ def evaluate(cases, k, c, use_reg=True, use_age=True, oracle=False):
             name, _, price = max(opts, key=lambda o: o[1])
             if name == "probe":
                 b = I.update(b, PROBE_TABLES,
-                             (case["probe"], draw(S.L_SCOPE, t, rng)))
+                             (case["probe"], draw(S.L_SCOPE, t, rng_scope)))
                 probes += 1
             else:
-                b = I.update(b, [G], (draw(G, t, rng),))
+                b = I.update(b, [G], (draw(G, t, rng_reg),))
                 regs += 1
             extra += price
             bought.add(name)

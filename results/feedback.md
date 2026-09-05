@@ -144,7 +144,7 @@ more confident that findings are harmless, in a world where they are
 not. **The feedback loop corrects the over-remediation bias and keeps
 going, into the error that costs 2400 minutes instead of 30.**
 
-Cost with learning: 60.47 min/finding. Frozen prior: 61.04.
+Cost with learning: 60.47 min/finding. Frozen prior: 60.47.
 
 The practical conclusion is not *do not learn*. It is that an agent
 must weight feedback by how likely it was to hear about the outcome at

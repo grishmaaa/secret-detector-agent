@@ -31,6 +31,9 @@ These import from `run_experiment.py` and from each other, in this order.
 | `experiments/scope_sensitivity.py` | `fixes`, `scope_probe` | The scope field's reliability parameter, swept |
 | `experiments/misspecified.py` | `fixes` | The agent against an agent that knows the true tables, in worlds the agent's model gets wrong |
 | `experiments/model_uncertainty.py` | `fixes`, `feedback` | A Bayes factor between the agent's structural assumption and its negation |
+| `experiments/worked_examples.py` | `fixes`, `registry`, `scope_probe` | The three pieces the paper shows by hand rather than reports |
+| `experiments/generalization.py` | `fixes`, `scope_probe` | The same agent on a credential that does not hide its identifier |
+| `experiments/stability.py` | `fixes` | How much of each headline is one draw: 200 scope-draw seeds |
 
 The project is one model rather than a library, so it is written as a small
 number of scripts that import from each other instead of a package. Splitting it

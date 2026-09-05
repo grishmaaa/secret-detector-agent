@@ -244,3 +244,118 @@ told me before submission and I read both as things to fix in the writing rather
 than as statements about what the work was. The defect is that every input is my
 estimate, and no amount of sensitivity analysis converts an estimate into a
 measurement.
+
+---
+
+# Week 2 — the adversarial round
+
+Run after the Week 2 paper existed as a finished draft, not during writing. Two
+rounds against the same repository, with deliberately different briefs, plus my
+own verification of every claim before accepting it. Nothing below is accepted on
+a reviewer's say-so; the evidence column is what I ran.
+
+## The two briefs, and why the difference is the finding
+
+**Round A — defect hunt.** Three reviewers pointed at named failure modes:
+confounded comparisons, random-number reuse across channels, stale derived
+quantities, mutated globals, silent fallbacks in sampling loops, boundary
+comparisons. Told to report only defects they had confirmed by running something.
+
+**Round B — evaluative.** Asked to grade the project against three checklists:
+seven probabilistic-modelling components, five deployment-risk categories, ten
+research-quality criteria.
+
+Both rounds had the same code. Round B explicitly reran four scripts and cited
+line numbers in files nobody pointed it at, including `paper/limitations.md:104`,
+so its access was real.
+
+**They found almost disjoint sets of problems, and neither alone was enough.**
+
+Round A found every defect that changes a number: an abstract crediting one fix
+with three fixes' work, a policy comparison scored against the cost cell the
+paper repudiates, a detection rate transplanted between experiments, three
+random-number defects, a buried negative result. Round B found none of them.
+
+Round B found every problem that is an *absence*: a baseline human modelled as a
+perfect oracle, a harm model denominated only in engineer-minutes, four
+stakeholders priced as one 30-minute unit, a privileged credential used to
+investigate an unprivileged one. Round A found none of those, and structurally
+could not — you cannot grep for a stakeholder nobody modelled.
+
+The reason Round B missed the defects is in its own words: *"the core scripts
+completed successfully and reproduced the reported results."* That is a
+reproduction check. **Every defect Round A found is deterministic and reproduces
+byte-identically forever** — `feedback.py`'s broken arm returns 61.04 on every
+run there has ever been. A reproduction check cannot find a bug that reproduces.
+
+I had assumed the difference would be code access. It was the brief. That is now
+the second time this project has learned the same lesson in a different form: in
+Week 1 four reviewers read the write-up and a fifth found a sampler bug by
+reading the code. The Week 1 version of the lesson was *read the code*. The
+Week 2 version is sharper: **reading the code is not enough either. You have to
+be told what kind of thing to look for.**
+
+## Round A — accepted
+
+| # | Finding | Evidence I ran | Action |
+|---|---|---|---|
+| A1 | The abstract credits `p_exploit` alone with taking `fake` recall to 0.954 | `fixes.json`: fix 1 alone gives **0.588**. 0.954 needs all three fixes plus scope | **Changed a headline.** Abstract and §10 rewritten with the decomposition; Figure 2 now has three bars |
+| A2 | P1's regret of 114.12 is scored against the 2400-minute cell §10 repudiates | Rescored on the corrected matrix: **13.89**. P0/P2/P3 unaffected — none of them ever dismisses a live key | **Changed a headline.** "Nine times worse" was 1.27×. Ladder now on one ruler |
+| A3 | A negative result is in the results and absent from the paper | `week2-results.md` §"the probe did not pay for itself": P3 spends 0.132, recovers 0.066, ends behind P2 at 60.52 vs 60.45 | Restored as a finding, with a cost column so it cannot be hidden again |
+| A4 | The drift-alarm's 100% detection is quoted against a failure it cannot see | `feedback.md`: the alarm watches free features, which carry zero bits about live vs revoked — the exact axis the drift is on | **Changed a claim.** §10.3 now says the agent has an alarm for the cheap drift and none for the expensive one |
+| A5 | `feedback.py` learn/frozen arms short-circuit differently and simulate different worlds | Paired: `cost_frozen` 61.0417 → **60.4703**, identical to learned. The learned prior changes the action on 0 of 4000 findings | **Deleted a result.** The 0.57 min/finding advantage for learning does not exist |
+| A6 | `registry.py` shares one RNG across three channels | At c = 0.5 the age rows are identical across states, so the channel is provably uninformative — and the table showed it changing regret by −0.8% | Three streams. Age-only at c = 0.5 now exactly **0.0%** |
+| A7 | `scope_probe.evsi()` takes no cost matrix, so it prices information at 2400 forever | The probe purchase rate was **0.468 for all 75 perturbed matrices** in the cost sweep | Threaded through. "6 of 15 cells don't matter" → **3 of 15** |
+| A8 | `generalization.py` identifier and scope draws share a stream | 19 of 500 identifier observations differ between arms of a paired A/B | Split. Scope value −0.230 → −0.149, recovered 80.8% → the ratio is withdrawn entirely (see A9) |
+| A9 | "Recovers 80.8% of the value of perfect live/revoked knowledge" divides a total-regret gain by a live/revoked-only ceiling | The identifier also carries 0.8981 bits about live vs `fake`, so gains on excluded axes were counted inside the ratio | Replaced with an unratioed statement: 65% of total regret removed |
+| A10 | `worked_examples.py` prints 0.0199 and 0.0380 bits for channels its own prose calls "0.0000 by construction" | Re-applying a spent channel's table to a belief containing it measures a second independent draw of an observation in hand | Bits column now 0.0000, matching the prose |
+| A11 | Every number in the project is one seed and nothing reports an interval | Two of my own scripts disagreed about the same agent: balanced accuracy 0.467 vs 0.494 | **New experiment.** `stability.py`, 200 scope-draw seeds |
+
+## Round B — accepted
+
+| # | Finding | Why I accepted it | Action |
+|---|---|---|---|
+| B1 | The baseline human is a perfect oracle | `research-file.md`: *"A human resolves it correctly every time."* The entire cost-not-accuracy framing rests on it, and no real responder is that | New limitation, stated as what it is: every saving here is a saving against an idealisation |
+| B2 | The harm model is engineer-minutes and nothing else | Customer outage, data exposure, regulatory consequence are outside the objective, so an action that saves 30 minutes and takes down a service scores better | New limitation. The 332-minute `revoke now` price is cleanup, not blast radius |
+| B3 | "A human" is one price; real organisations have several | Security analyst, service owner, platform team, committer — different authority, availability and permissions, all priced at 30 minutes | New limitation, with the queue point folded in |
+| B4 | `p_exploit = 0.10` is presented as a probability | It is ~4× a figure measured on *public* exposure, applied to private repos | Reframed in §10 as a stress-test parameter, with the 0.027 and its provenance stated |
+| B5 | The agent needs a privileged credential to investigate an unprivileged one | Real, and the paper stated the boundary without noting nothing implements it | New limitation |
+| B6 | The `fake` collapse to 0.0111 assumes conditional independence | `shrinkage.md`: 0.0111 → 0.0216 at w = 0.8 → **0.0576** at w = 0.5. The paper printed 0.0111 twice and never said "shrinkage" | New paragraph in §4 giving the range |
+
+## Round B — rejected, with the check
+
+| Claim | What I found |
+|---|---|
+| "The corrected boundary is 0.06891 on the reachable set" | It is **0.06588**. `evidence-selection.md:118`. Invented digit |
+| "145 of 500 decisions are not hindsight-optimal" | `feedback.json` lists 8 failures. The number is not in the data |
+| "`rotate\|fake = 20` materially determines your conclusion; set it to zero and P2 collapses into P0" | Published spans: `revoke\|live` 85.56, two cells at 48.56, `rotate\|revoked` 10.07. `rotate\|fake` span was **0.00**. Backwards. (It becomes 4.34 *after* fixing A7 — right cell, wrong reason, and the reviewer could not have known) |
+| "Claims without evidence — FAIL: 23.2%, 1.75 min, never escalates" | All three are **Week 1 paper** claims. `23.2` appears in the Week 2 paper zero times, escalation is a rule firing on 2.6%, and the Week 1 paper is labelled as such in the README |
+| "The New Questions aren't surfaced in the paper" | §14 is New Questions. Graded the wrong document, then recommended rewriting the paper around Week 2 — which is the paper it did not read |
+
+## What the round cost and what it bought
+
+Eleven confirmed defects in Round A, six accepted absences in Round B, five
+rejections. Four defects changed a published number, one deleted a result
+outright, and one added an experiment that did not exist.
+
+The uncomfortable part: **in four cases the results file was already more careful
+than the paper written from it.** `week2-results.md` reported the probe not
+paying for itself. `feedback.md` said the alarm cannot see the drift that
+matters. `shrinkage.md` gave the range on 0.0111. `fixes.md` had the
+decomposition showing 0.588. Every one of those was in the repository before the
+paper was written, and the paper contradicted all four.
+
+That is not a review finding about the model. It is a finding about the step
+between having a result and writing it down, which is where this project has now
+lost more accuracy than in the experiments themselves.
+
+## Verdict
+
+Both rounds converge on the same thing, and it is the thing the Week 1 rejection
+said: the decision machinery is sound and the probability model is not measured
+against anything. Round B put it as *"you have demonstrated that you can build
+and interrogate a probabilistic model; you have not demonstrated that your
+probability model describes the real world."*
+
+I am recording that without arguing with it, because it is correct, and because
+the paper now says it in Section 13 in almost those words.

@@ -51,15 +51,25 @@ def free_belief(c, f):
     return W.posterior({"context": c, "form": f})
 
 
-def evsi(b, tables, spaces):
-    now = W.expected_cost(b, W.cheapest(b))
+def evsi(b, tables, spaces, cost=None):
+    """Expected minutes of decision cost removed by buying `tables`.
+
+    `cost` must be threaded through. Without it this falls back to the module
+    global -- the Week 2 matrix at p_exploit = 1.0, `dismiss|live` = 2400 --
+    and every caller that had already corrected that cell went on pricing
+    information against the version it repudiated. Every other EVSI in the
+    project takes the matrix as an argument; this one silently did not, so
+    `cost_sensitivity.py` swept fifteen cost cells while the purchase decision
+    stayed frozen at exactly 0.468 for all seventy-five perturbed matrices.
+    """
+    now = W.expected_cost(b, W.cheapest(b, cost), cost)
     after = 0.0
     for o in product(*spaces):
         po = I.marginal(b, tables, o)
         if po <= 0:
             continue
         after += po * W.expected_cost(post := I.update(b, tables, o),
-                                      W.cheapest(post))
+                                      W.cheapest(post, cost), cost)
     return I.snap(now - after)
 
 
