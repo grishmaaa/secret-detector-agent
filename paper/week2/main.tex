@@ -57,9 +57,10 @@ information and by expected cost saved produces near-opposite orders, and the
 agent buys evidence exactly where its two free features contradict each other
 rather than where a finding looks most severe. Second, a cost of 2400 minutes for
 dismissing a live key contained an unstated probability of exploitation equal to
-one; making it explicit at 0.10 took recall on hard-coded fakes from 0.000 to
-0.954 while total cost barely moved, which is a failure that cost reporting alone
-cannot see. Third, the Week~1 invariance---that free features carry exactly zero
+one. Correcting it, together with two other fixes, took recall on hard-coded
+fakes from 0.000 to $0.95 \pm 0.02$ while total cost moved by 1.3 minutes---a
+failure that cost reporting alone cannot see, because the metric barely moved
+while three of five states went from unreachable to reachable. Third, the Week~1 invariance---that free features carry exactly zero
 bits about live versus revoked---is a property of the credential format rather
 than of secret scanning, and moving the agent to a credential that exposes a
 public identifier does not remove the invariance but relocates it onto a
@@ -189,8 +190,9 @@ the OpenAI key is a partner pattern \emph{without} validity-check support, so a
 scanner finding genuinely does not carry liveness. The admin endpoint the probe
 uses is OpenAI's~\cite{openai2026admin}.
 
-I read no new papers for Week~2. The reading that shaped it was practitioner
-discussion, recorded in Section~\ref{sec:human}.
+I read no new papers for Week~2. What shaped it was the Week~1 practitioner
+discussion, which is recorded in Section~\ref{sec:human} along with the fact
+that Week~2 added nothing to it.
 
 % =====================================================================
 \section{The Probabilistic View}
@@ -257,6 +259,15 @@ State & Prior & $P(\text{prod})$ & $P(\text{wf})$ & Product & Post. \\
 
 Entropy falls from 1.7805 to 1.3127 bits. \texttt{fake} collapses from 0.2475 to
 0.0111: the evidence is almost entirely about whether this is a credential at all.
+
+\paragraph{That 0.0111 assumes the two features are conditionally independent,
+and they are not.} A path like \texttt{tests/fixtures/} and a name like
+\texttt{dummy\_key} are substantially the same signal, counted twice. Shrinking
+the second feature's log-likelihood towards the first moves the posterior to
+0.0216 at 20\% shrinkage and \textbf{0.0576} at 50\%---a fivefold range on the
+number this section calls its point. Read 0.0111 as the most favourable end of
+that range rather than as a measurement. The invariance below survives every
+weight; the \texttt{fake} collapse does not.
 
 \paragraph{And what the update does not do is the point of the project.}
 \texttt{live} moves from 0.4356 to 0.5780 and \texttt{revoked} moves with it. The
@@ -472,23 +483,40 @@ did about that.
 
 \begin{center}
 \small
-\begin{tabular}{@{}lrrr@{}}
+\begin{tabular}{@{}lrrrr@{}}
 \toprule
-Policy & Regret (min) & Balanced acc. & Human \\
+Policy & Regret & Total cost & Balanced acc. & Human \\
 \midrule
-P0 baseline & 12.99 & --- & 0\% \\
-P1 belief only & 114.12 & --- & 0\% \\
-P2 threshold & 10.91 & 0.300 & 0\% \\
-P3 + probe & 10.85 & 0.367 & 0\% \\
+P0 baseline & 12.99 & 62.53 & --- & 0\% \\
+P1 belief only & 13.89 & 63.43 & --- & 0\% \\
+P2 threshold & 10.91 & 60.45 & 0.300 & 0\% \\
+P3 + probe & 10.85 & 60.52 & 0.367 & 0\% \\
 \midrule
-P6 all fixes + scope & \textbf{8.23} & \textbf{0.467} & 2.4\% \\
+P6 all fixes + scope & \textbf{8.20} & \textbf{59.14} & $0.48 \pm 0.02$ & 2.6\% \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-P1 is the warning. Acting on the most likely state costs nine times the regret of
-acting on the cheapest expected cost, because the most likely state and the best
-action are different questions.
+Every row is scored on the same cost matrix, which took a correction to get
+right: P1's regret was first reported as 114.12, and that figure is produced by
+scoring it against the \emph{uncorrected} matrix---the 2400-minute cell
+Section~\ref{sec:failure} is about. On the corrected matrix P1 costs 13.89.
+P0, P2 and P3 are unaffected because none of them ever dismisses a live key, but
+the comparison as originally printed put one policy on a ruler the others were
+not on, and it made the headline four times larger than it is.
+
+P1 is still the warning, at its true size. Acting on the most likely state costs
+27\% more regret than acting on the cheapest expected cost, because the most
+likely state and the best action are different questions.
+
+\paragraph{A negative result: the probe did not pay for itself.} P3 spends 0.13
+minutes per finding buying probes and recovers 0.07 in better decisions, ending
+\emph{behind} P2 on total cost, 60.52 against 60.45. The value-of-information
+machinery lost money on this draw. Two readings are available and I cannot
+separate them at $n = 500$: either the decision rule is right and this draw was
+unlucky, or a saving too small for a few hundred cases to detect is too small to
+justify the machinery. Reporting the regret column alone would have hidden it,
+which is why the cost column is here.
 
 \subsection{Adding states changed nothing; adding a channel changed everything}
 
@@ -522,6 +550,46 @@ likelihood tables, so good calibration here says the arithmetic is right, not
 that the model is. A well-calibrated agent in a world it invented is the least
 surprising result available.
 
+\subsection{How much of this is one draw?}
+
+Every figure above comes from a single seed, and until a review round asked, none
+of them carried an interval. Two of my own scripts disagreed about the same
+agent---balanced accuracy 0.467 in one and 0.494 in another---and I had been
+quoting whichever the section needed without noticing they were one
+configuration run twice.
+
+They differ because P6 has a nuisance random variable nothing else has: the scope
+reading is drawn. Holding the 500 cases fixed and varying only that draw, 200
+times:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Quantity & Mean & SD & 95\% interval \\
+\midrule
+Regret, min/finding & 8.20 & 0.26 & 7.74--8.71 \\
+Balanced accuracy & 0.480 & 0.023 & 0.449--0.528 \\
+Sent to a human & 0.026 & 0.004 & 0.020--0.034 \\
+\texttt{fake} recall & 0.950 & 0.015 & 0.916--0.977 \\
+\texttt{revoked} recall & 0.089 & 0.023 & 0.047--0.132 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{The \texttt{fake} result survives comfortably}---0.901 to 0.977 across
+every seed, against a pre-fix value of exactly 0.000. \textbf{Balanced accuracy
+does not support three decimal places}, and \texttt{revoked} recall supports
+about one significant figure: on 129 revoked cases, the difference between 0.109
+and 0.089 is a handful of findings. The 2.4\% and 2.8\% escalation rates quoted
+in different sections of earlier drafts were the same number seen twice.
+
+This is a lower bound on the uncertainty, not a confidence interval. Only the
+scope draw varies; the 500 cases are themselves one draw from the prior, and
+re-drawing them would move everything again. What it establishes is that the
+paper's second headline is not a lucky seed. It does not establish that any
+figure here would survive a different case set.
+
 \subsection{Sensitivity}
 
 Three quantities I could not defend were replaced by sweeps rather than asserted:
@@ -551,18 +619,37 @@ certainly breached. The honest price is $P(\text{exploitation}) \times
 down. Nothing about the number 2400 looks like a probability, so nothing prompted
 the check.
 
+\paragraph{$p = 0.10$ is a stress-test parameter, not an estimate.} The one
+quantified datapoint I could find is a vendor experiment in which 2 of 75 leaked
+keys drew activity beyond a validity check within twelve hours: $0.027$, measured
+on \emph{public} exposure over a short window. This model is scoped to private
+repositories, where the hazard is lower, and I use a value nearly four times
+larger. That is deliberately conservative and it is not a measurement of
+anything. It is swept in \texttt{results/fixes.md} for exactly that reason, and
+Section~\ref{sec:general} shows the policy is not monotone in it.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/w2-pexploit.pdf}
-\caption{Per-class recall before and after making the exploitation probability
-explicit at 0.10. Three of five classes go from unreachable to reachable while
-total cost moves by 1.3 minutes.}
+\caption{Per-class recall, decomposed. The exploitation probability alone takes
+\texttt{fake} from 0.000 to 0.588; reaching 0.954 needs all three fixes and the
+scope field. \texttt{other} moves the other way, from 0.500 to 0.000, because
+the residual state is escalated rather than labelled. Total cost moves by 1.3
+minutes across the whole change.}
 \label{fig:pexploit}
 \end{figure}
 
-Figure~\ref{fig:pexploit} is the result. \texttt{fake} recall $0.000 \to 0.954$,
-balanced accuracy $0.300 \to 0.467$, and total cost $60.45 \to 59.11$---a
-1.3-minute move. \textbf{A metric that barely moved was hiding a policy that
+Figure~\ref{fig:pexploit} is the result, and the attribution matters. The
+exploitation probability \emph{alone} takes \texttt{fake} recall from 0.000 to
+\textbf{0.588}. Reaching 0.95 needs all three fixes together, the scope field
+included. The first version of this paper credited one intervention with three
+interventions' work; the decomposition is in \texttt{results/fixes.md} and was
+always there.
+
+Together: \texttt{fake} recall $0.000 \to 0.95 \pm 0.02$, balanced accuracy
+$0.300 \to 0.48 \pm 0.02$, and total cost $60.45 \to 59.14$---a 1.3-minute
+move. One class moves the other way: \texttt{other} recall falls from 0.500 to
+0.10, because the residual state is now escalated rather than labelled. \textbf{A metric that barely moved was hiding a policy that
 could not name three of its five states.} This is why balanced accuracy is
 reported alongside cost throughout, not as an objective but as the diagnostic
 that can contradict the objective.
@@ -591,11 +678,21 @@ dismissed, 5\%. Learning from that feed drifts $P(\texttt{live})$ from 0.4356 to
 0.2691 over 3000 findings. The agent concludes the world is safer than it is, and
 every step of that inference is locally correct.
 
-There is no unbiased signal to correct against, so the answer is an alarm rather
-than a correction. A Jensen--Shannon divergence between the belief the agent
-started with and the belief it has learned, with a threshold calibrated on
-held-out windows, detects the drift in 100\% of runs at a 500-finding window with
-no false positives.
+There is no unbiased signal to correct against, so the answer would have to be an
+alarm rather than a correction. I built one: a Jensen--Shannon divergence between
+the evidence distribution the agent expects and the one it observes over a
+rolling window, thresholded on held-out data. It detects a shift in how many
+findings are \texttt{fake} in 100\% of runs at a 500-finding window with no
+false positives.
+
+\textbf{It does not detect the drift above, and the reason is this paper's own
+main result.} The alarm watches the free features, and the free features carry
+zero bits about live versus revoked. A shift in how many findings are still live
+is exactly the shift they cannot see. So the agent has a working alarm for the
+drift that costs little and no alarm for the drift that costs most. An earlier
+version of this section quoted the 100\% figure against the belief drift; that
+was a detection rate from one experiment attached to a failure from another, and
+\texttt{results/feedback.md} says so in the file the number came from.
 
 % =====================================================================
 \section{Generalisation}
@@ -628,18 +725,22 @@ zero about a different one.}
 \toprule
 & OpenAI & AWS \\
 \midrule
-Regret (min/finding) & 8.23 & 2.77 \\
+Regret (min/finding) & 7.77 & 2.69 \\
 Probe bought & 46.8\% & 4.0\% \\
-Balanced accuracy & 0.459 & 0.579 \\
+Balanced accuracy & 0.494 & 0.590 \\
 \texttt{revoked} recall & 0.085 & 0.961 \\
 \texttt{zero\_scope} recall & 0.286 & 0.000 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-The free identifier recovers 80.8\% of the value that perfect live-versus-revoked
-knowledge would be worth, at zero cost, on every finding rather than on the
-minority where a probe was worth buying.
+The free identifier removes 65\% of total regret, at zero cost, on every finding
+rather than on the minority where a probe was worth buying. An earlier version
+called this ``79.7\% of the value of perfect live-versus-revoked knowledge'';
+that ratio divides a total-regret improvement by a live-versus-revoked-only
+ceiling, and the identifier also carries 0.8981 bits about \texttt{live} versus
+\texttt{fake}, so gains on axes the denominator excludes were being counted
+inside it. The unbounded ratio is gone; the improvement is not.
 
 \paragraph{But the invariance does not disappear. It moves.} The identifier
 carries 0.8400 bits about \texttt{live} versus \texttt{revoked} and
@@ -769,6 +870,39 @@ expected cost, and escalates when the residual state concentrates or the worst
 case breaches a ceiling. That is a defensible response to indistinguishability
 rather than a solution to it.
 
+\paragraph{The baseline human is a perfect oracle, and no human is.} The whole
+project is built on the claim that escalate-everything is never wrong about the
+state, so there is no accuracy to win and only cost to compete on. A real
+responder misclassifies, is unavailable, misreads ownership, or recommends a
+rotation that misses an undocumented consumer. Treating the human as a state
+oracle makes the baseline artificially strong on accuracy and artificially simple
+on cost, and it means the agent is being compared against something that does not
+exist. Every saving reported here is a saving against an idealisation.
+
+\paragraph{The harm model is engineer-minutes and nothing else.} Customer-facing
+outage, data exposure, contractual and regulatory consequence, and reputational
+damage are all outside the objective. An action that saves thirty engineer-minutes
+while taking down a customer-facing service scores better in this model, which is
+not a rounding error in the cost matrix but a category the cost matrix does not
+have. The 332-minute price on \textsc{revoke now} is the cleanup, not the
+blast radius.
+
+\paragraph{``A human'' is one price, and real organisations have several.} A
+security analyst, the service owner who gets paged when a revocation breaks
+production, the platform team that governs the admin credential the probe uses,
+and the committer who may own none of the above are priced here as a single
+30-minute unit. They differ in authority, availability, permissions and cost, and
+the escalation rule cannot express which of them a finding should reach. Related:
+the 2.6\% escalation rate is a rate and not a queue---at a hundred findings that
+is three interruptions, and at a hundred thousand it is two and a half thousand
+cases with no model of who absorbs them.
+
+\paragraph{The agent needs a privileged credential to investigate an
+unprivileged one.} The probe reads an admin API. A production deployment would
+have to answer who holds that credential, how narrowly it is scoped, how its use
+is audited, and how the secret in the finding is kept out of logs, traces, tickets
+and prompts. The architecture states the boundary; nothing here implements it.
+
 \paragraph{The evidence model is small.} Five channels, of which two are free
 text features. A production system would read deployment manifests, CI logs,
 CloudTrail and the secret store, and would have a different and probably better
@@ -823,13 +957,16 @@ directed which experiments to run and why. I verified the belief update in
 Section~\ref{sec:prob} by hand against the code before trusting either.
 
 Errors it introduced and I corrected are logged in \texttt{research-file.md},
-twenty-eight of them. Nine changed a published number or claim. The most
-consequential: a confounded comparison that priced the live-versus-revoked axis
-at 61.3\% when the correct figure is 82.1\%, and an experiment in
-Section~\ref{sec:general} whose first version treated two evidence channels as
-conditionally independent when both report the same underlying event, making a
-component look three times more harmful than it is. Both were caught by checking
-output against the write-up built around it.
+thirty-six of them. Fourteen changed a published number or claim. The most
+consequential were found by an adversarial review round run against this paper
+and its code after a full draft existed: an abstract that credited one fix with
+three fixes' work, a policy comparison scored against the very cost cell
+Section~\ref{sec:failure} repudiates, a detection rate quoted against a failure
+a different experiment had shown it cannot see, three random-number defects that
+made two arms of a paired comparison simulate different worlds, and a negative
+result present in the results files and absent from the paper. Every one was
+found by checking the paper against the output it was written from, and in four
+cases the results file was already more careful than the paper.
 
 Every experiment reported here was run by me and reproduces byte-for-byte from a
 clean checkout at the stated seeds.
@@ -839,7 +976,7 @@ clean checkout at the stated seeds.
 
 \url{https://github.com/grishmaaa/secret-detector-agent}
 
-All thirteen Week~2 experiments, the results they write, and this paper.
+All fourteen Week~2 experiments, the results they write, and this paper.
 
 \bibliographystyle{named}
 \bibliography{references}

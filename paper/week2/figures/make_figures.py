@@ -93,21 +93,27 @@ plt.close(fig)
 # What the unstated p_exploit = 1.0 was costing, per class. The whole point is
 # that the overall cost barely moves while three of five classes go from
 # unreachable to reachable, so cost is plotted beside recall rather than instead.
+# Three bars, not two. The first version of this figure put P2 beside P6 under a
+# caption about the exploitation probability, which credited one fix with three
+# fixes' work -- p_exploit ALONE gives fake recall 0.588, not 0.954.
 states = ["live", "revoked", "fake", "zero_scope", "other"]
 before = [1.000, 0.000, 0.000, 0.000, 0.500]
+fix1 = [0.9953, 0.0078, 0.5878, 0.0000, 0.3333]
 after = [0.9859, 0.1085, 0.9542, 0.2857, 0.000]
 
-fig, ax = plt.subplots(figsize=(W, 2.05))
+fig, ax = plt.subplots(figsize=(W, 2.45))
 y = np.arange(len(states))[::-1]
-h = 0.34
-ax.barh(y + h / 2 + 0.02, before, height=h, color=MID, zorder=3,
-        label="before (P2, $p_{\\mathrm{exploit}}$ = 1.0 unstated)")
-ax.barh(y - h / 2 - 0.02, after, height=h, color=ACCENT, zorder=3,
-        label="after (P6, $p_{\\mathrm{exploit}}$ = 0.10 explicit)")
-for yy, v in zip(y + h / 2 + 0.02, before):
-    ax.text(v + 0.018, yy, f"{v:.3f}", va="center", fontsize=6.3, color="#555")
-for yy, v in zip(y - h / 2 - 0.02, after):
-    ax.text(v + 0.018, yy, f"{v:.3f}", va="center", fontsize=6.3, color=INK)
+h = 0.25
+ax.barh(y + h + 0.02, before, height=h, color=MID, zorder=3,
+        label="P2: $p_{\\mathrm{exploit}}$ = 1.0, unstated")
+ax.barh(y, fix1, height=h, color=SECOND, zorder=3,
+        label="P5: $p_{\\mathrm{exploit}}$ = 0.10 alone")
+ax.barh(y - h - 0.02, after, height=h, color=ACCENT, zorder=3,
+        label="P6: all three fixes + scope")
+for off, vals, col in ((h + 0.02, before, "#555"), (0.0, fix1, INK),
+                       (-h - 0.02, after, INK)):
+    for yy, v in zip(y + off, vals):
+        ax.text(v + 0.018, yy, f"{v:.3f}", va="center", fontsize=6.0, color=col)
 
 ax.set_yticks(y); ax.set_yticklabels(states)
 ax.set_xlim(0, 1.19); ax.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
@@ -116,11 +122,11 @@ ax.grid(axis="x", lw=0.4, color=LIGHT, zorder=0)
 ax.set_axisbelow(True)
 for sp in ("top", "right", "left"):
     ax.spines[sp].set_visible(False)
-ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.30), ncol=1,
+ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.26), ncol=1,
           frameon=False, fontsize=6.4, handlelength=1.1,
           handletextpad=0.5, borderpad=0.2)
-ax.text(0.0, 1.055, "balanced accuracy 0.300 $\\rightarrow$ 0.467   ·   "
-        "total cost 60.45 $\\rightarrow$ 59.11 min",
+ax.text(0.0, 1.045, "balanced accuracy 0.300 $\\rightarrow$ 0.48 $\\pm$ 0.02   ·   "
+        "total cost 60.45 $\\rightarrow$ 59.14 min",
         transform=ax.transAxes, fontsize=6.5, color="#555", va="bottom")
 fig.savefig("w2-pexploit.pdf", bbox_inches="tight", pad_inches=0.02)
 plt.close(fig)
