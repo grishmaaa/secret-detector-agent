@@ -179,11 +179,11 @@ What changed my design rather than my citations: Turney's separation is why the
 question table has two columns rather than one, and Elkan is why I stopped
 reporting accuracy as a headline and started deriving boundaries.
 
-On the domain, SecretBench~\cite{basak2023secretbench} and the comparative
-evaluation of detection tools~\cite{basak2023comparative} establish that
-detection is largely solved and that the surviving problem is what to do with a
-detection; Alahmadi et al.~\cite{alahmadi2022falsepositives} quantify the
-false-positive burden that makes triage cost-dominated. GitGuardian's
+On the domain, the comparative evaluation of detection
+tools~\cite{basak2023comparative} establishes that detection is largely solved
+and that the surviving problem is what to do with a detection; Alahmadi et
+al.~\cite{alahmadi2022falsepositives} quantify the false-positive burden that
+makes triage cost-dominated. GitGuardian's
 report~\cite{gitguardian2026} is the source of the survival figure in my prior.
 GitHub's pattern table~\cite{github2026patterns} is what establishes the premise:
 the OpenAI key is a partner pattern \emph{without} validity-check support, so a
@@ -916,7 +916,18 @@ key, and no live credential exists anywhere in this project.
 
 \paragraph{The honest verdict.} This is a decision system that reasons well given
 a model. It is not a validated production security control, and the gap between
-those two things is a dataset that does not exist.
+those two things is a dataset nobody can build.
+
+Labelled secret data does exist, and it labels the wrong thing. The public
+corpora label real credential against false positive, which is the axis my free
+features already resolve. My axis is live against revoked, and that one cannot
+be labelled after the fact: establishing whether a credential leaked two years
+ago still authenticated at the time would have required trying it at the time,
+which is the single act this design forbids. The gap is therefore structural
+rather than a matter of effort. It is not that nobody has done the work; it is
+that the measurement destroys the thing being measured, and any corpus that did
+carry the label would be evidence that somebody authenticated with credentials
+they found in other people's repositories.
 
 % =====================================================================
 \section{New Questions}
