@@ -2,6 +2,9 @@
 
 A cost-aware triage agent for secret-scanner findings.
 
+**The deliverable is `paper/week2/main.pdf`.** It stands alone; nothing here is
+needed to read it.
+
 ## The problem
 
 A scanner reads a repository and reports that some string in it looks like a key. That is the entire input. It does not say what kind of key, and it does not say whether the key works.
@@ -180,6 +183,44 @@ gitignored rather than redistributed. Figures are rebuilt with
 `python figures/make_figures.py`.
 
 ## What is in here
+
+```
+.
+|-- README.md                    <- this file
+|-- research-file.md             <- the working document: scope, cost model, sources,
+|                                   and the AI prompt and error tables
+|-- discussion-record.md         <- every public exchange and what it changed
+|-- review-record.md             <- AI reviews, each comment accepted or rejected
+|-- paper/
+|   |-- README.md                <- which paper is which
+|   |-- week2/
+|   |   |-- main.pdf             <- THE DELIVERABLE
+|   |   |-- main.tex             <- LaTeX source, IJCAI-ECAI 26 style
+|   |   |-- references.bib       <- only sources actually read
+|   |   `-- figures/             <- three vector PDFs + the script that builds them
+|   |-- main.pdf, main.tex       <- the Week 1 paper, kept as submitted
+|   |-- figures/                 <- the Week 1 figures
+|   |-- preprint.md              <- the Week 1 argument, pre-LaTeX
+|   `-- limitations.md           <- long-form limitations
+|-- src/
+|   `-- README.md                <- empty on purpose; points at experiments/
+|-- experiments/                 <- 20 scripts. Week 1 first, then W2-1 to W2-10
+|   |-- run_experiment.py        <- the Week 1 agent and policy comparison
+|   |-- week2_experiment.py      <- five states, 500 cases, P0-P3, calibration
+|   |-- fixes.py                 <- the three fixes; the cost matrix everything uses
+|   `-- ...                      <- see src/README.md for all 20 and their imports
+|-- results/                     <- one .md for the argument and one .json for the
+|                                   numbers, per experiment. 33 files
+|-- data/
+|   `-- cases.json               <- 40 frozen Week 1 cases, written once
+|-- decisions/
+|   |-- decision-log.md          <- every design decision and what it later cost
+|   `-- probability-decision-record.md   <- one finding worked end to end
+`-- social/
+    `-- reddit.md                <- what I asked, where, and what it changed
+```
+
+Week 2 cases are not stored; they regenerate deterministically from seed 20260902.
 
 ### Documents
 
